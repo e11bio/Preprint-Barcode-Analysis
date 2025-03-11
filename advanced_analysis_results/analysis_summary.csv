@@ -1,0 +1,8 @@
+Analysis,Key Findings
+Co-occurrence Analysis,Differential co-occurrence strength: 0.78
+Hierarchical Clustering,Hierarchical clustering successfully separates neuron populations
+Infection Marker Correlation,Overall correlation with viral load: 0.95 (p=0.0000)
+Channel Preference Analysis,Most preferred channel in overexpressors: Ty1-barcode-R2
+Dimensionality Reduction,t-SNE analysis reveals clear separation between populations
+Network Analysis,Network density (Expected Population): 0.000
+NGS Correlation Analysis,Viral freq. correlation with overexpressors: -0.24

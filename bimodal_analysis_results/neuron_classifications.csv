@@ -1,0 +1,1184 @@
+Neuron_ID,Channels_Expressed,Population
+0,2,Expected Population
+1,8,Expected Population
+2,3,Expected Population
+3,3,Expected Population
+4,18,Overexpressors
+5,0,Expected Population
+6,18,Overexpressors
+7,3,Expected Population
+8,4,Expected Population
+9,4,Expected Population
+10,3,Expected Population
+11,3,Expected Population
+12,1,Expected Population
+13,5,Expected Population
+14,2,Expected Population
+15,7,Expected Population
+16,4,Expected Population
+17,2,Expected Population
+18,7,Expected Population
+19,1,Expected Population
+20,3,Expected Population
+21,4,Expected Population
+22,1,Expected Population
+23,1,Expected Population
+24,5,Expected Population
+25,2,Expected Population
+26,5,Expected Population
+27,2,Expected Population
+28,2,Expected Population
+29,3,Expected Population
+30,3,Expected Population
+31,2,Expected Population
+32,11,Overexpressors
+33,0,Expected Population
+34,2,Expected Population
+35,1,Expected Population
+36,1,Expected Population
+37,2,Expected Population
+38,3,Expected Population
+39,1,Expected Population
+40,7,Expected Population
+41,2,Expected Population
+42,6,Expected Population
+43,6,Expected Population
+44,6,Expected Population
+45,2,Expected Population
+46,13,Overexpressors
+47,6,Expected Population
+48,1,Expected Population
+49,1,Expected Population
+50,1,Expected Population
+51,3,Expected Population
+52,3,Expected Population
+53,4,Expected Population
+54,4,Expected Population
+55,3,Expected Population
+56,2,Expected Population
+57,0,Expected Population
+58,0,Expected Population
+59,4,Expected Population
+60,1,Expected Population
+61,0,Expected Population
+62,2,Expected Population
+63,6,Expected Population
+64,3,Expected Population
+65,1,Expected Population
+66,2,Expected Population
+67,5,Expected Population
+68,1,Expected Population
+69,0,Expected Population
+70,1,Expected Population
+71,1,Expected Population
+72,14,Overexpressors
+73,4,Expected Population
+74,5,Expected Population
+75,4,Expected Population
+76,3,Expected Population
+77,5,Expected Population
+78,4,Expected Population
+79,3,Expected Population
+80,18,Overexpressors
+81,10,Overexpressors
+82,14,Overexpressors
+83,9,Expected Population
+84,13,Overexpressors
+85,17,Overexpressors
+86,5,Expected Population
+87,14,Overexpressors
+88,9,Expected Population
+89,18,Overexpressors
+90,16,Overexpressors
+91,4,Expected Population
+92,16,Overexpressors
+93,16,Overexpressors
+94,4,Expected Population
+95,7,Expected Population
+96,3,Expected Population
+97,2,Expected Population
+98,18,Overexpressors
+99,3,Expected Population
+100,3,Expected Population
+101,1,Expected Population
+102,17,Overexpressors
+103,13,Overexpressors
+104,15,Overexpressors
+105,12,Overexpressors
+106,12,Overexpressors
+107,4,Expected Population
+108,2,Expected Population
+109,14,Overexpressors
+110,5,Expected Population
+111,6,Expected Population
+112,3,Expected Population
+113,14,Overexpressors
+114,4,Expected Population
+115,14,Overexpressors
+116,16,Overexpressors
+117,17,Overexpressors
+118,17,Overexpressors
+119,17,Overexpressors
+120,1,Expected Population
+121,15,Overexpressors
+122,12,Overexpressors
+123,3,Expected Population
+124,11,Overexpressors
+125,14,Overexpressors
+126,9,Expected Population
+127,16,Overexpressors
+128,10,Overexpressors
+129,2,Expected Population
+130,17,Overexpressors
+131,18,Overexpressors
+132,0,Expected Population
+133,14,Overexpressors
+134,3,Expected Population
+135,18,Overexpressors
+136,12,Overexpressors
+137,17,Overexpressors
+138,1,Expected Population
+139,4,Expected Population
+140,5,Expected Population
+141,8,Expected Population
+142,3,Expected Population
+143,0,Expected Population
+144,0,Expected Population
+145,7,Expected Population
+146,2,Expected Population
+147,4,Expected Population
+148,7,Expected Population
+149,7,Expected Population
+150,6,Expected Population
+151,10,Overexpressors
+152,7,Expected Population
+153,7,Expected Population
+154,18,Overexpressors
+155,2,Expected Population
+156,1,Expected Population
+157,3,Expected Population
+158,1,Expected Population
+159,2,Expected Population
+160,4,Expected Population
+161,3,Expected Population
+162,2,Expected Population
+163,5,Expected Population
+164,3,Expected Population
+165,16,Overexpressors
+166,3,Expected Population
+167,5,Expected Population
+168,2,Expected Population
+169,3,Expected Population
+170,4,Expected Population
+171,2,Expected Population
+172,3,Expected Population
+173,1,Expected Population
+174,6,Expected Population
+175,1,Expected Population
+176,6,Expected Population
+177,9,Expected Population
+178,17,Overexpressors
+179,1,Expected Population
+180,3,Expected Population
+181,18,Overexpressors
+182,18,Overexpressors
+183,2,Expected Population
+184,11,Overexpressors
+185,8,Expected Population
+186,7,Expected Population
+187,8,Expected Population
+188,5,Expected Population
+189,6,Expected Population
+190,4,Expected Population
+191,3,Expected Population
+192,1,Expected Population
+193,3,Expected Population
+194,3,Expected Population
+195,3,Expected Population
+196,4,Expected Population
+197,17,Overexpressors
+198,2,Expected Population
+199,17,Overexpressors
+200,3,Expected Population
+201,3,Expected Population
+202,4,Expected Population
+203,7,Expected Population
+204,3,Expected Population
+205,2,Expected Population
+206,6,Expected Population
+207,6,Expected Population
+208,6,Expected Population
+209,1,Expected Population
+210,17,Overexpressors
+211,0,Expected Population
+212,4,Expected Population
+213,1,Expected Population
+214,7,Expected Population
+215,5,Expected Population
+216,5,Expected Population
+217,8,Expected Population
+218,8,Expected Population
+219,4,Expected Population
+220,17,Overexpressors
+221,6,Expected Population
+222,5,Expected Population
+223,3,Expected Population
+224,7,Expected Population
+225,4,Expected Population
+226,1,Expected Population
+227,0,Expected Population
+228,5,Expected Population
+229,8,Expected Population
+230,4,Expected Population
+231,3,Expected Population
+232,6,Expected Population
+233,7,Expected Population
+234,1,Expected Population
+235,3,Expected Population
+236,2,Expected Population
+237,16,Overexpressors
+238,2,Expected Population
+239,10,Overexpressors
+240,17,Overexpressors
+241,3,Expected Population
+242,15,Overexpressors
+243,7,Expected Population
+244,18,Overexpressors
+245,4,Expected Population
+246,1,Expected Population
+247,5,Expected Population
+248,4,Expected Population
+249,2,Expected Population
+250,2,Expected Population
+251,16,Overexpressors
+252,4,Expected Population
+253,5,Expected Population
+254,7,Expected Population
+255,7,Expected Population
+256,2,Expected Population
+257,2,Expected Population
+258,2,Expected Population
+259,3,Expected Population
+260,11,Overexpressors
+261,3,Expected Population
+262,1,Expected Population
+263,3,Expected Population
+264,2,Expected Population
+265,3,Expected Population
+266,3,Expected Population
+267,5,Expected Population
+268,4,Expected Population
+269,7,Expected Population
+270,7,Expected Population
+271,3,Expected Population
+272,3,Expected Population
+273,18,Overexpressors
+274,2,Expected Population
+275,18,Overexpressors
+276,6,Expected Population
+277,5,Expected Population
+278,3,Expected Population
+279,6,Expected Population
+280,5,Expected Population
+281,7,Expected Population
+282,2,Expected Population
+283,5,Expected Population
+284,6,Expected Population
+285,3,Expected Population
+286,7,Expected Population
+287,1,Expected Population
+288,2,Expected Population
+289,1,Expected Population
+290,3,Expected Population
+291,5,Expected Population
+292,2,Expected Population
+293,5,Expected Population
+294,17,Overexpressors
+295,3,Expected Population
+296,5,Expected Population
+297,16,Overexpressors
+298,18,Overexpressors
+299,11,Overexpressors
+300,3,Expected Population
+301,4,Expected Population
+302,1,Expected Population
+303,17,Overexpressors
+304,6,Expected Population
+305,11,Overexpressors
+306,4,Expected Population
+307,1,Expected Population
+308,2,Expected Population
+309,13,Overexpressors
+310,5,Expected Population
+311,14,Overexpressors
+312,1,Expected Population
+313,6,Expected Population
+314,2,Expected Population
+315,3,Expected Population
+316,18,Overexpressors
+317,0,Expected Population
+318,3,Expected Population
+319,12,Overexpressors
+320,8,Expected Population
+321,5,Expected Population
+322,6,Expected Population
+323,7,Expected Population
+324,3,Expected Population
+325,6,Expected Population
+326,3,Expected Population
+327,18,Overexpressors
+328,4,Expected Population
+329,7,Expected Population
+330,4,Expected Population
+331,7,Expected Population
+332,6,Expected Population
+333,2,Expected Population
+334,11,Overexpressors
+335,5,Expected Population
+336,3,Expected Population
+337,6,Expected Population
+338,17,Overexpressors
+339,2,Expected Population
+340,0,Expected Population
+341,1,Expected Population
+342,2,Expected Population
+343,3,Expected Population
+344,1,Expected Population
+345,1,Expected Population
+346,3,Expected Population
+347,18,Overexpressors
+348,15,Overexpressors
+349,17,Overexpressors
+350,6,Expected Population
+351,1,Expected Population
+352,12,Overexpressors
+353,0,Expected Population
+354,18,Overexpressors
+355,5,Expected Population
+356,1,Expected Population
+357,16,Overexpressors
+358,17,Overexpressors
+359,14,Overexpressors
+360,4,Expected Population
+361,3,Expected Population
+362,5,Expected Population
+363,3,Expected Population
+364,6,Expected Population
+365,16,Overexpressors
+366,14,Overexpressors
+367,1,Expected Population
+368,3,Expected Population
+369,6,Expected Population
+370,18,Overexpressors
+371,3,Expected Population
+372,1,Expected Population
+373,8,Expected Population
+374,3,Expected Population
+375,15,Overexpressors
+376,5,Expected Population
+377,0,Expected Population
+378,18,Overexpressors
+379,17,Overexpressors
+380,15,Overexpressors
+381,16,Overexpressors
+382,15,Overexpressors
+383,6,Expected Population
+384,7,Expected Population
+385,4,Expected Population
+386,5,Expected Population
+387,1,Expected Population
+388,5,Expected Population
+389,17,Overexpressors
+390,2,Expected Population
+391,7,Expected Population
+392,2,Expected Population
+393,0,Expected Population
+394,18,Overexpressors
+395,17,Overexpressors
+396,18,Overexpressors
+397,4,Expected Population
+398,3,Expected Population
+399,1,Expected Population
+400,2,Expected Population
+401,2,Expected Population
+402,3,Expected Population
+403,0,Expected Population
+404,2,Expected Population
+405,1,Expected Population
+406,6,Expected Population
+407,17,Overexpressors
+408,1,Expected Population
+409,3,Expected Population
+410,1,Expected Population
+411,18,Overexpressors
+412,1,Expected Population
+413,9,Expected Population
+414,4,Expected Population
+415,13,Overexpressors
+416,14,Overexpressors
+417,18,Overexpressors
+418,2,Expected Population
+419,15,Overexpressors
+420,1,Expected Population
+421,4,Expected Population
+422,3,Expected Population
+423,6,Expected Population
+424,4,Expected Population
+425,1,Expected Population
+426,1,Expected Population
+427,10,Overexpressors
+428,3,Expected Population
+429,1,Expected Population
+430,15,Overexpressors
+431,4,Expected Population
+432,1,Expected Population
+433,0,Expected Population
+434,2,Expected Population
+435,13,Overexpressors
+436,2,Expected Population
+437,9,Expected Population
+438,5,Expected Population
+439,5,Expected Population
+440,2,Expected Population
+441,1,Expected Population
+442,2,Expected Population
+443,7,Expected Population
+444,3,Expected Population
+445,0,Expected Population
+446,3,Expected Population
+447,1,Expected Population
+448,4,Expected Population
+449,12,Overexpressors
+450,6,Expected Population
+451,2,Expected Population
+452,2,Expected Population
+453,5,Expected Population
+454,6,Expected Population
+455,6,Expected Population
+456,1,Expected Population
+457,1,Expected Population
+458,2,Expected Population
+459,8,Expected Population
+460,17,Overexpressors
+461,15,Overexpressors
+462,2,Expected Population
+463,4,Expected Population
+464,2,Expected Population
+465,4,Expected Population
+466,7,Expected Population
+467,8,Expected Population
+468,2,Expected Population
+469,8,Expected Population
+470,16,Overexpressors
+471,11,Overexpressors
+472,16,Overexpressors
+473,11,Overexpressors
+474,2,Expected Population
+475,5,Expected Population
+476,4,Expected Population
+477,4,Expected Population
+478,2,Expected Population
+479,3,Expected Population
+480,1,Expected Population
+481,5,Expected Population
+482,4,Expected Population
+483,6,Expected Population
+484,4,Expected Population
+485,4,Expected Population
+486,2,Expected Population
+487,4,Expected Population
+488,3,Expected Population
+489,15,Overexpressors
+490,1,Expected Population
+491,15,Overexpressors
+492,5,Expected Population
+493,2,Expected Population
+494,6,Expected Population
+495,9,Expected Population
+496,4,Expected Population
+497,16,Overexpressors
+498,4,Expected Population
+499,6,Expected Population
+500,8,Expected Population
+501,4,Expected Population
+502,4,Expected Population
+503,13,Overexpressors
+504,14,Overexpressors
+505,5,Expected Population
+506,3,Expected Population
+507,6,Expected Population
+508,9,Expected Population
+509,13,Overexpressors
+510,15,Overexpressors
+511,10,Overexpressors
+512,3,Expected Population
+513,3,Expected Population
+514,3,Expected Population
+515,7,Expected Population
+516,7,Expected Population
+517,16,Overexpressors
+518,4,Expected Population
+519,14,Overexpressors
+520,6,Expected Population
+521,6,Expected Population
+522,15,Overexpressors
+523,7,Expected Population
+524,3,Expected Population
+525,7,Expected Population
+526,5,Expected Population
+527,5,Expected Population
+528,5,Expected Population
+529,3,Expected Population
+530,4,Expected Population
+531,10,Overexpressors
+532,10,Overexpressors
+533,9,Expected Population
+534,3,Expected Population
+535,1,Expected Population
+536,2,Expected Population
+537,3,Expected Population
+538,9,Expected Population
+539,4,Expected Population
+540,10,Overexpressors
+541,4,Expected Population
+542,3,Expected Population
+543,3,Expected Population
+544,10,Overexpressors
+545,4,Expected Population
+546,13,Overexpressors
+547,5,Expected Population
+548,4,Expected Population
+549,4,Expected Population
+550,4,Expected Population
+551,0,Expected Population
+552,5,Expected Population
+553,6,Expected Population
+554,10,Overexpressors
+555,17,Overexpressors
+556,11,Overexpressors
+557,5,Expected Population
+558,5,Expected Population
+559,8,Expected Population
+560,2,Expected Population
+561,1,Expected Population
+562,3,Expected Population
+563,5,Expected Population
+564,16,Overexpressors
+565,1,Expected Population
+566,7,Expected Population
+567,4,Expected Population
+568,2,Expected Population
+569,1,Expected Population
+570,3,Expected Population
+571,6,Expected Population
+572,18,Overexpressors
+573,1,Expected Population
+574,8,Expected Population
+575,1,Expected Population
+576,5,Expected Population
+577,3,Expected Population
+578,5,Expected Population
+579,10,Overexpressors
+580,10,Overexpressors
+581,3,Expected Population
+582,5,Expected Population
+583,6,Expected Population
+584,7,Expected Population
+585,6,Expected Population
+586,3,Expected Population
+587,9,Expected Population
+588,2,Expected Population
+589,17,Overexpressors
+590,3,Expected Population
+591,14,Overexpressors
+592,2,Expected Population
+593,2,Expected Population
+594,8,Expected Population
+595,4,Expected Population
+596,4,Expected Population
+597,3,Expected Population
+598,2,Expected Population
+599,3,Expected Population
+600,3,Expected Population
+601,2,Expected Population
+602,6,Expected Population
+603,3,Expected Population
+604,2,Expected Population
+605,1,Expected Population
+606,3,Expected Population
+607,7,Expected Population
+608,4,Expected Population
+609,1,Expected Population
+610,3,Expected Population
+611,5,Expected Population
+612,2,Expected Population
+613,1,Expected Population
+614,10,Overexpressors
+615,1,Expected Population
+616,2,Expected Population
+617,3,Expected Population
+618,6,Expected Population
+619,6,Expected Population
+620,8,Expected Population
+621,16,Overexpressors
+622,4,Expected Population
+623,12,Overexpressors
+624,3,Expected Population
+625,2,Expected Population
+626,6,Expected Population
+627,5,Expected Population
+628,2,Expected Population
+629,15,Overexpressors
+630,3,Expected Population
+631,5,Expected Population
+632,5,Expected Population
+633,3,Expected Population
+634,0,Expected Population
+635,2,Expected Population
+636,1,Expected Population
+637,4,Expected Population
+638,4,Expected Population
+639,3,Expected Population
+640,9,Expected Population
+641,9,Expected Population
+642,6,Expected Population
+643,2,Expected Population
+644,8,Expected Population
+645,6,Expected Population
+646,5,Expected Population
+647,1,Expected Population
+648,5,Expected Population
+649,5,Expected Population
+650,6,Expected Population
+651,6,Expected Population
+652,14,Overexpressors
+653,7,Expected Population
+654,4,Expected Population
+655,3,Expected Population
+656,2,Expected Population
+657,7,Expected Population
+658,2,Expected Population
+659,11,Overexpressors
+660,8,Expected Population
+661,4,Expected Population
+662,4,Expected Population
+663,3,Expected Population
+664,3,Expected Population
+665,1,Expected Population
+666,18,Overexpressors
+667,1,Expected Population
+668,6,Expected Population
+669,2,Expected Population
+670,6,Expected Population
+671,3,Expected Population
+672,1,Expected Population
+673,4,Expected Population
+674,2,Expected Population
+675,3,Expected Population
+676,1,Expected Population
+677,4,Expected Population
+678,9,Expected Population
+679,2,Expected Population
+680,5,Expected Population
+681,5,Expected Population
+682,3,Expected Population
+683,2,Expected Population
+684,4,Expected Population
+685,15,Overexpressors
+686,3,Expected Population
+687,3,Expected Population
+688,2,Expected Population
+689,3,Expected Population
+690,3,Expected Population
+691,2,Expected Population
+692,1,Expected Population
+693,4,Expected Population
+694,5,Expected Population
+695,15,Overexpressors
+696,3,Expected Population
+697,2,Expected Population
+698,6,Expected Population
+699,5,Expected Population
+700,5,Expected Population
+701,8,Expected Population
+702,8,Expected Population
+703,12,Overexpressors
+704,7,Expected Population
+705,0,Expected Population
+706,4,Expected Population
+707,5,Expected Population
+708,6,Expected Population
+709,3,Expected Population
+710,6,Expected Population
+711,3,Expected Population
+712,2,Expected Population
+713,2,Expected Population
+714,17,Overexpressors
+715,8,Expected Population
+716,4,Expected Population
+717,7,Expected Population
+718,7,Expected Population
+719,2,Expected Population
+720,3,Expected Population
+721,8,Expected Population
+722,2,Expected Population
+723,3,Expected Population
+724,5,Expected Population
+725,1,Expected Population
+726,2,Expected Population
+727,5,Expected Population
+728,3,Expected Population
+729,7,Expected Population
+730,5,Expected Population
+731,4,Expected Population
+732,9,Expected Population
+733,11,Overexpressors
+734,6,Expected Population
+735,5,Expected Population
+736,2,Expected Population
+737,5,Expected Population
+738,1,Expected Population
+739,4,Expected Population
+740,9,Expected Population
+741,9,Expected Population
+742,3,Expected Population
+743,5,Expected Population
+744,4,Expected Population
+745,5,Expected Population
+746,2,Expected Population
+747,10,Overexpressors
+748,3,Expected Population
+749,4,Expected Population
+750,14,Overexpressors
+751,8,Expected Population
+752,6,Expected Population
+753,1,Expected Population
+754,5,Expected Population
+755,3,Expected Population
+756,2,Expected Population
+757,7,Expected Population
+758,4,Expected Population
+759,4,Expected Population
+760,2,Expected Population
+761,3,Expected Population
+762,5,Expected Population
+763,8,Expected Population
+764,2,Expected Population
+765,3,Expected Population
+766,7,Expected Population
+767,17,Overexpressors
+768,4,Expected Population
+769,9,Expected Population
+770,7,Expected Population
+771,5,Expected Population
+772,4,Expected Population
+773,5,Expected Population
+774,3,Expected Population
+775,4,Expected Population
+776,4,Expected Population
+777,2,Expected Population
+778,2,Expected Population
+779,3,Expected Population
+780,5,Expected Population
+781,3,Expected Population
+782,8,Expected Population
+783,3,Expected Population
+784,1,Expected Population
+785,2,Expected Population
+786,6,Expected Population
+787,5,Expected Population
+788,2,Expected Population
+789,4,Expected Population
+790,4,Expected Population
+791,7,Expected Population
+792,8,Expected Population
+793,0,Expected Population
+794,1,Expected Population
+795,6,Expected Population
+796,8,Expected Population
+797,3,Expected Population
+798,8,Expected Population
+799,16,Overexpressors
+800,2,Expected Population
+801,6,Expected Population
+802,3,Expected Population
+803,2,Expected Population
+804,10,Overexpressors
+805,1,Expected Population
+806,2,Expected Population
+807,5,Expected Population
+808,4,Expected Population
+809,2,Expected Population
+810,5,Expected Population
+811,2,Expected Population
+812,8,Expected Population
+813,6,Expected Population
+814,2,Expected Population
+815,0,Expected Population
+816,1,Expected Population
+817,16,Overexpressors
+818,5,Expected Population
+819,15,Overexpressors
+820,15,Overexpressors
+821,17,Overexpressors
+822,5,Expected Population
+823,15,Overexpressors
+824,3,Expected Population
+825,3,Expected Population
+826,18,Overexpressors
+827,4,Expected Population
+828,6,Expected Population
+829,17,Overexpressors
+830,5,Expected Population
+831,17,Overexpressors
+832,15,Overexpressors
+833,4,Expected Population
+834,1,Expected Population
+835,6,Expected Population
+836,1,Expected Population
+837,5,Expected Population
+838,2,Expected Population
+839,7,Expected Population
+840,5,Expected Population
+841,5,Expected Population
+842,6,Expected Population
+843,4,Expected Population
+844,9,Expected Population
+845,5,Expected Population
+846,5,Expected Population
+847,18,Overexpressors
+848,3,Expected Population
+849,5,Expected Population
+850,6,Expected Population
+851,2,Expected Population
+852,3,Expected Population
+853,15,Overexpressors
+854,5,Expected Population
+855,5,Expected Population
+856,5,Expected Population
+857,5,Expected Population
+858,4,Expected Population
+859,11,Overexpressors
+860,1,Expected Population
+861,12,Overexpressors
+862,15,Overexpressors
+863,9,Expected Population
+864,8,Expected Population
+865,7,Expected Population
+866,2,Expected Population
+867,4,Expected Population
+868,3,Expected Population
+869,1,Expected Population
+870,6,Expected Population
+871,11,Overexpressors
+872,2,Expected Population
+873,2,Expected Population
+874,7,Expected Population
+875,5,Expected Population
+876,0,Expected Population
+877,16,Overexpressors
+878,8,Expected Population
+879,4,Expected Population
+880,6,Expected Population
+881,4,Expected Population
+882,2,Expected Population
+883,2,Expected Population
+884,7,Expected Population
+885,3,Expected Population
+886,3,Expected Population
+887,2,Expected Population
+888,10,Overexpressors
+889,3,Expected Population
+890,1,Expected Population
+891,5,Expected Population
+892,6,Expected Population
+893,4,Expected Population
+894,9,Expected Population
+895,3,Expected Population
+896,1,Expected Population
+897,4,Expected Population
+898,3,Expected Population
+899,7,Expected Population
+900,4,Expected Population
+901,5,Expected Population
+902,6,Expected Population
+903,2,Expected Population
+904,6,Expected Population
+905,1,Expected Population
+906,9,Expected Population
+907,7,Expected Population
+908,10,Overexpressors
+909,5,Expected Population
+910,6,Expected Population
+911,2,Expected Population
+912,5,Expected Population
+913,3,Expected Population
+914,1,Expected Population
+915,10,Overexpressors
+916,8,Expected Population
+917,2,Expected Population
+918,0,Expected Population
+919,3,Expected Population
+920,6,Expected Population
+921,6,Expected Population
+922,2,Expected Population
+923,2,Expected Population
+924,7,Expected Population
+925,6,Expected Population
+926,4,Expected Population
+927,9,Expected Population
+928,6,Expected Population
+929,4,Expected Population
+930,8,Expected Population
+931,0,Expected Population
+932,3,Expected Population
+933,6,Expected Population
+934,7,Expected Population
+935,17,Overexpressors
+936,2,Expected Population
+937,10,Overexpressors
+938,5,Expected Population
+939,4,Expected Population
+940,7,Expected Population
+941,4,Expected Population
+942,4,Expected Population
+943,16,Overexpressors
+944,14,Overexpressors
+945,3,Expected Population
+946,5,Expected Population
+947,3,Expected Population
+948,0,Expected Population
+949,6,Expected Population
+950,2,Expected Population
+951,5,Expected Population
+952,7,Expected Population
+953,7,Expected Population
+954,4,Expected Population
+955,3,Expected Population
+956,2,Expected Population
+957,3,Expected Population
+958,4,Expected Population
+959,3,Expected Population
+960,6,Expected Population
+961,4,Expected Population
+962,4,Expected Population
+963,2,Expected Population
+964,3,Expected Population
+965,6,Expected Population
+966,5,Expected Population
+967,1,Expected Population
+968,5,Expected Population
+969,4,Expected Population
+970,6,Expected Population
+971,3,Expected Population
+972,1,Expected Population
+973,3,Expected Population
+974,4,Expected Population
+975,2,Expected Population
+976,5,Expected Population
+977,14,Overexpressors
+978,1,Expected Population
+979,1,Expected Population
+980,1,Expected Population
+981,1,Expected Population
+982,6,Expected Population
+983,3,Expected Population
+984,5,Expected Population
+985,3,Expected Population
+986,3,Expected Population
+987,4,Expected Population
+988,7,Expected Population
+989,6,Expected Population
+990,4,Expected Population
+991,7,Expected Population
+992,4,Expected Population
+993,1,Expected Population
+994,12,Overexpressors
+995,4,Expected Population
+996,0,Expected Population
+997,2,Expected Population
+998,2,Expected Population
+999,1,Expected Population
+1000,5,Expected Population
+1001,2,Expected Population
+1002,3,Expected Population
+1003,7,Expected Population
+1004,9,Expected Population
+1005,4,Expected Population
+1006,5,Expected Population
+1007,2,Expected Population
+1008,3,Expected Population
+1009,0,Expected Population
+1010,3,Expected Population
+1011,2,Expected Population
+1012,4,Expected Population
+1013,9,Expected Population
+1014,1,Expected Population
+1015,1,Expected Population
+1016,4,Expected Population
+1017,1,Expected Population
+1018,16,Overexpressors
+1019,1,Expected Population
+1020,3,Expected Population
+1021,12,Overexpressors
+1022,1,Expected Population
+1023,12,Overexpressors
+1024,15,Overexpressors
+1025,5,Expected Population
+1026,1,Expected Population
+1027,3,Expected Population
+1028,0,Expected Population
+1029,2,Expected Population
+1030,16,Overexpressors
+1031,3,Expected Population
+1032,11,Overexpressors
+1033,13,Overexpressors
+1034,6,Expected Population
+1035,0,Expected Population
+1036,0,Expected Population
+1037,14,Overexpressors
+1038,2,Expected Population
+1039,8,Expected Population
+1040,4,Expected Population
+1041,4,Expected Population
+1042,15,Overexpressors
+1043,1,Expected Population
+1044,2,Expected Population
+1045,5,Expected Population
+1046,3,Expected Population
+1047,4,Expected Population
+1048,3,Expected Population
+1049,1,Expected Population
+1050,0,Expected Population
+1051,0,Expected Population
+1052,8,Expected Population
+1053,11,Overexpressors
+1054,18,Overexpressors
+1055,16,Overexpressors
+1056,3,Expected Population
+1057,2,Expected Population
+1058,4,Expected Population
+1059,3,Expected Population
+1060,16,Overexpressors
+1061,1,Expected Population
+1062,2,Expected Population
+1063,7,Expected Population
+1064,4,Expected Population
+1065,4,Expected Population
+1066,1,Expected Population
+1067,4,Expected Population
+1068,4,Expected Population
+1069,8,Expected Population
+1070,1,Expected Population
+1071,14,Overexpressors
+1072,2,Expected Population
+1073,14,Overexpressors
+1074,2,Expected Population
+1075,11,Overexpressors
+1076,4,Expected Population
+1077,4,Expected Population
+1078,12,Overexpressors
+1079,4,Expected Population
+1080,7,Expected Population
+1081,2,Expected Population
+1082,14,Overexpressors
+1083,8,Expected Population
+1084,6,Expected Population
+1085,1,Expected Population
+1086,2,Expected Population
+1087,17,Overexpressors
+1088,17,Overexpressors
+1089,2,Expected Population
+1090,16,Overexpressors
+1091,5,Expected Population
+1092,1,Expected Population
+1093,8,Expected Population
+1094,5,Expected Population
+1095,5,Expected Population
+1096,0,Expected Population
+1097,4,Expected Population
+1098,3,Expected Population
+1099,11,Overexpressors
+1100,3,Expected Population
+1101,1,Expected Population
+1102,7,Expected Population
+1103,2,Expected Population
+1104,3,Expected Population
+1105,14,Overexpressors
+1106,11,Overexpressors
+1107,11,Overexpressors
+1108,1,Expected Population
+1109,1,Expected Population
+1110,10,Overexpressors
+1111,4,Expected Population
+1112,2,Expected Population
+1113,11,Overexpressors
+1114,16,Overexpressors
+1115,14,Overexpressors
+1116,15,Overexpressors
+1117,9,Expected Population
+1118,17,Overexpressors
+1119,8,Expected Population
+1120,15,Overexpressors
+1121,8,Expected Population
+1122,15,Overexpressors
+1123,7,Expected Population
+1124,16,Overexpressors
+1125,7,Expected Population
+1126,6,Expected Population
+1127,1,Expected Population
+1128,15,Overexpressors
+1129,13,Overexpressors
+1130,12,Overexpressors
+1131,10,Overexpressors
+1132,0,Expected Population
+1133,14,Overexpressors
+1134,10,Overexpressors
+1135,1,Expected Population
+1136,13,Overexpressors
+1137,0,Expected Population
+1138,14,Overexpressors
+1139,10,Overexpressors
+1140,1,Expected Population
+1141,8,Expected Population
+1142,15,Overexpressors
+1143,0,Expected Population
+1144,12,Overexpressors
+1145,1,Expected Population
+1146,0,Expected Population
+1147,11,Overexpressors
+1148,9,Expected Population
+1149,14,Overexpressors
+1150,6,Expected Population
+1151,4,Expected Population
+1152,14,Overexpressors
+1153,15,Overexpressors
+1154,4,Expected Population
+1155,0,Expected Population
+1156,1,Expected Population
+1157,0,Expected Population
+1158,14,Overexpressors
+1159,14,Overexpressors
+1160,7,Expected Population
+1161,1,Expected Population
+1162,8,Expected Population
+1163,9,Expected Population
+1164,7,Expected Population
+1165,17,Overexpressors
+1166,16,Overexpressors
+1167,14,Overexpressors
+1168,15,Overexpressors
+1169,9,Expected Population
+1170,0,Expected Population
+1171,4,Expected Population
+1172,14,Overexpressors
+1173,15,Overexpressors
+1174,0,Expected Population
+1175,14,Overexpressors
+1176,3,Expected Population
+1177,13,Overexpressors
+1178,6,Expected Population
+1179,0,Expected Population
+1180,1,Expected Population
+1181,5,Expected Population
+1182,7,Expected Population
