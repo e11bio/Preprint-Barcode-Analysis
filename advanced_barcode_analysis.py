@@ -7,12 +7,13 @@ from sklearn.linear_model import LinearRegression
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 from scipy.cluster.hierarchy import linkage, dendrogram
-from scipy.spatial.distance import pdist
+from scipy.spatial.distance import pdist, squareform
 import statsmodels.stats.multitest
 import os
 import networkx as nx
 from matplotlib.lines import Line2D
 from bimodal_barcode_analysis import load_barcode_data
+from collections import Counter
 
 # Set publication-quality figure aesthetics
 plt.rcParams['font.family'] = 'Arial'
@@ -597,6 +598,239 @@ def ngs_correlation_analysis(thresholded, neuron_classifications, ngs_data_path,
         "figure": fig
     }
 
+def hamming_distance_analysis(thresholded, neuron_classifications=None):
+    """
+    Analyze the Hamming distances between barcodes, focusing on each segment's closest match
+    
+    Parameters:
+    -----------
+    thresholded : numpy.ndarray
+        Binary matrix where 1 = expression above threshold, 0 = expression below
+    neuron_classifications : pandas.DataFrame or None
+        DataFrame with neuron classification into populations
+    
+    Returns:
+    --------
+    dict
+        Dictionary containing Hamming distance analysis results and visualizations
+    """
+    # Calculate the full pairwise Hamming distance matrix
+    hamming_distances = squareform(pdist(thresholded, metric='hamming'))
+    
+    # Set diagonal to infinity to exclude self-comparisons when finding minimum
+    np.fill_diagonal(hamming_distances, np.inf)
+    
+    # Find closest match for each segment
+    closest_match_distances = np.min(hamming_distances, axis=1)
+    
+    # Convert from Hamming distance (ratio) to absolute bit differences
+    # Hamming distance is a ratio, so multiply by the number of bits/channels
+    num_channels = thresholded.shape[1]
+    closest_match_bit_diffs = closest_match_distances * num_channels
+    
+    # Create visualizations
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    
+    # Plot histogram of bit differences to closest match
+    bins = np.arange(0, int(np.max(closest_match_bit_diffs) + 2)) - 0.5
+    ax1.hist(closest_match_bit_diffs, bins=bins, alpha=0.7, edgecolor='black', color='royalblue')
+    ax1.set_xlabel('Bit Differences to Closest Match')
+    ax1.set_ylabel('Frequency')
+    ax1.set_title('Distribution of Hamming Distances to Closest Matching Segment')
+    ax1.grid(alpha=0.3)
+    
+    # Add statistics to the plot
+    mean_diff = np.mean(closest_match_bit_diffs)
+    median_diff = np.median(closest_match_bit_diffs)
+    min_diff = np.min(closest_match_bit_diffs)
+    
+    stats_text = f"Mean: {mean_diff:.2f}\nMedian: {median_diff:.2f}\nMin: {min_diff:.2f}"
+    ax1.text(0.95, 0.95, stats_text, transform=ax1.transAxes, 
+             verticalalignment='top', horizontalalignment='right',
+             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    
+    # Calculate percentiles for closest-match distances
+    percentiles = [5, 10, 25, 50, 75, 90, 95]
+    p_values = np.percentile(closest_match_bit_diffs, percentiles)
+    
+    # Plot the CDF of the closest match distances
+    sorted_diffs = np.sort(closest_match_bit_diffs)
+    cumulative = np.arange(1, len(sorted_diffs) + 1) / len(sorted_diffs)
+    
+    ax2.plot(sorted_diffs, cumulative, '-', lw=2)
+    ax2.grid(alpha=0.3)
+    ax2.set_xlabel('Bit Differences to Closest Match')
+    ax2.set_ylabel('Cumulative Probability')
+    ax2.set_title('Cumulative Distribution of Hamming Distances')
+    
+    # Add percentile information to the CDF plot
+    percentile_df = pd.DataFrame({
+        'Percentile': percentiles,
+        'Bit Diff': p_values
+    })
+    
+    percentile_text = "Percentiles:\n" + "\n".join([f"{p}%: {v:.1f}" for p, v in zip(percentiles, p_values)])
+    ax2.text(0.05, 0.95, percentile_text, transform=ax2.transAxes,
+             verticalalignment='top', horizontalalignment='left',
+             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    
+    plt.tight_layout()
+    
+    # If neuron classifications are provided, also analyze distances by population
+    pop_analysis = None
+    if neuron_classifications is not None:
+        pop_fig, pop_ax = plt.subplots(figsize=(10, 6))
+        
+        # Get masks for each population
+        expected_pop_mask = neuron_classifications['Population'] == 'Expected Population'
+        overexp_mask = neuron_classifications['Population'] == 'Overexpressors'
+        
+        # Get distances for each population
+        expected_distances = closest_match_bit_diffs[expected_pop_mask]
+        overexp_distances = closest_match_bit_diffs[overexp_mask]
+        
+        # Plot histogram of distances for each population
+        bins = np.arange(0, int(np.max(closest_match_bit_diffs) + 2)) - 0.5
+        pop_ax.hist([expected_distances, overexp_distances], bins=bins, alpha=0.7, 
+                    edgecolor='black', color=['blue', 'red'], label=['Expected Population', 'Overexpressors'])
+        
+        pop_ax.set_xlabel('Bit Differences to Closest Match')
+        pop_ax.set_ylabel('Frequency')
+        pop_ax.set_title('Hamming Distances to Closest Match by Population')
+        pop_ax.grid(alpha=0.3)
+        pop_ax.legend()
+        
+        # Run statistical test to compare populations
+        try:
+            t_stat, p_val = stats.ttest_ind(expected_distances, overexp_distances, equal_var=False)
+            mann_whitney_stat, mann_whitney_p = stats.mannwhitneyu(expected_distances, overexp_distances)
+            
+            # Add statistics to the plot
+            exp_mean = np.mean(expected_distances)
+            overexp_mean = np.mean(overexp_distances)
+            stats_text = f"Expected Pop Mean: {exp_mean:.2f}\nOverexpressors Mean: {overexp_mean:.2f}\n"
+            stats_text += f"t-test p-value: {p_val:.4f}\nMann-Whitney p-value: {mann_whitney_p:.4f}"
+            
+            pop_ax.text(0.95, 0.95, stats_text, transform=pop_ax.transAxes,
+                      verticalalignment='top', horizontalalignment='right',
+                      bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+            
+            pop_analysis = {
+                "expected_pop_mean": exp_mean,
+                "overexp_mean": overexp_mean,
+                "t_test": (t_stat, p_val),
+                "mann_whitney": (mann_whitney_stat, mann_whitney_p),
+                "figure": pop_fig
+            }
+        except:
+            # If there's an error in the statistical test (e.g., not enough data)
+            pop_analysis = {
+                "error": "Could not perform statistical test - insufficient data",
+                "figure": pop_fig
+            }
+    
+    return {
+        "hamming_distances": hamming_distances,
+        "closest_match_distances": closest_match_bit_diffs,
+        "mean_distance": mean_diff,
+        "median_distance": median_diff,
+        "min_distance": min_diff,
+        "percentiles": percentile_df,
+        "figure": fig,
+        "population_analysis": pop_analysis
+    }
+
+def barcode_collision_analysis(thresholded):
+    """
+    Analyze barcode collisions - how many cells have unique barcodes, 
+    how many share with one other cell, etc.
+    
+    Parameters:
+    -----------
+    thresholded : numpy.ndarray
+        Binary matrix where 1 = expression above threshold, 0 = expression below
+    
+    Returns:
+    --------
+    dict
+        Dictionary containing collision analysis results and visualization
+    """
+    # Convert binary arrays to strings for hashability
+    barcode_strings = [''.join(map(str, row)) for row in thresholded]
+    
+    # Count occurrences of each barcode
+    barcode_counts = Counter(barcode_strings)
+    
+    # Count how many barcodes appear exactly once, twice, etc.
+    collision_counts = Counter(barcode_counts.values())
+    
+    # Calculate the total number of unique barcode patterns
+    unique_patterns = len(barcode_counts)
+    
+    # Calculate how many cells have 0, 1, 2, etc. collisions
+    cells_with_n_collisions = {}
+    for count_value, frequency in collision_counts.items():
+        cells_with_n_collisions[count_value-1] = count_value * frequency
+    
+    # Create a DataFrame for easier plotting and analysis
+    collision_df = pd.DataFrame({
+        'Collisions': [k for k in sorted(cells_with_n_collisions.keys())],
+        'Number of Cells': [cells_with_n_collisions[k] for k in sorted(cells_with_n_collisions.keys())]
+    })
+    
+    # Calculate percentages
+    total_cells = thresholded.shape[0]
+    collision_df['Percentage'] = (collision_df['Number of Cells'] / total_cells) * 100
+    
+    # Create visualization
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    
+    # Bar plot of collision counts
+    ax1.bar(collision_df['Collisions'], collision_df['Number of Cells'], 
+            alpha=0.7, edgecolor='black', color='forestgreen')
+    ax1.set_xlabel('Number of Collisions')
+    ax1.set_ylabel('Number of Cells')
+    ax1.set_title('Barcode Collision Distribution')
+    ax1.set_xticks(collision_df['Collisions'])
+    ax1.grid(alpha=0.3)
+    
+    # Add counts to each bar
+    for i, v in enumerate(collision_df['Number of Cells']):
+        ax1.text(collision_df['Collisions'].iloc[i], v + 5, str(v), 
+                ha='center', va='bottom')
+    
+    # Pie chart of collision percentages
+    ax2.pie(collision_df['Number of Cells'], labels=[f"{c} collisions" for c in collision_df['Collisions']], 
+            autopct='%1.1f%%', shadow=True, startangle=90)
+    ax2.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
+    ax2.set_title('Percentage of Cells by Collision Count')
+    
+    plt.tight_layout()
+    
+    # Create a summary statistics dictionary
+    summary_stats = {
+        "total_cells": total_cells,
+        "unique_barcode_patterns": unique_patterns,
+        "max_collisions": max(cells_with_n_collisions.keys()) if cells_with_n_collisions else 0,
+        "unique_cells_percentage": collision_df.loc[collision_df['Collisions'] == 0, 'Percentage'].iloc[0] if 0 in collision_df['Collisions'].values else 0,
+    }
+    
+    # Generate a markdown table for the report
+    table_rows = [f"| {row['Collisions']} | {row['Number of Cells']} | {row['Percentage']:.2f}% |" 
+                  for _, row in collision_df.iterrows()]
+    markdown_table = "| Collisions | Number of Cells | Percentage |\n"
+    markdown_table += "|:----------:|:-------------:|:----------:|\n"
+    markdown_table += "\n".join(table_rows)
+    
+    return {
+        "collision_df": collision_df,
+        "cells_with_n_collisions": cells_with_n_collisions,
+        "unique_patterns": unique_patterns,
+        "summary_stats": summary_stats,
+        "markdown_table": markdown_table,
+        "figure": fig
+    }
+
 def run_comprehensive_analysis(data_path='Data/neuron_barcodes_full_roi.npz', 
                              ngs_data_path='Data/221208-pool-seq-clean.csv',
                              output_dir='advanced_analysis_results'):
@@ -659,40 +893,12 @@ def run_comprehensive_analysis(data_path='Data/neuron_barcodes_full_roi.npz',
     results['co_occurrence']['figure'].savefig(
         f'{output_dir}/epitope_co_occurrence.png', dpi=300, bbox_inches='tight')
     
-    # 2. Hierarchical Clustering Analysis
-    print("Running hierarchical clustering analysis...")
-    results['hierarchical_clustering'] = hierarchical_clustering_analysis(
-        thresholded, neuron_classifications, channel_names)
-    results['hierarchical_clustering']['figure'].savefig(
-        f'{output_dir}/hierarchical_clustering.png', dpi=300, bbox_inches='tight')
-    
     # 3. Infection Marker Correlation Analysis
     print("Running infection marker correlation analysis...")
     results['infection_correlation'] = infection_marker_correlation_analysis(
         discrete, thresholded, neuron_classifications)
     results['infection_correlation']['figure'].savefig(
         f'{output_dir}/infection_correlation.png', dpi=300, bbox_inches='tight')
-    
-    # 4. Channel Preference Analysis
-    print("Running channel preference analysis...")
-    results['channel_preference'] = channel_preference_analysis(
-        thresholded, neuron_classifications, channel_names)
-    results['channel_preference']['figure'].savefig(
-        f'{output_dir}/channel_preference.png', dpi=300, bbox_inches='tight')
-    
-    # 5. Dimensionality Reduction Analysis
-    print("Running dimensionality reduction analysis...")
-    results['dimensionality_reduction'] = dimensionality_reduction_analysis(
-        thresholded, neuron_classifications)
-    results['dimensionality_reduction']['figure'].savefig(
-        f'{output_dir}/dimensionality_reduction.png', dpi=300, bbox_inches='tight')
-    
-    # 6. Network Analysis
-    print("Running network analysis...")
-    results['network_analysis'] = epitope_network_analysis(
-        thresholded, neuron_classifications, channel_names)
-    results['network_analysis']['figure'].savefig(
-        f'{output_dir}/epitope_networks.png', dpi=300, bbox_inches='tight')
     
     # 7. NGS Correlation Analysis
     print("Running NGS correlation analysis...")
@@ -701,25 +907,38 @@ def run_comprehensive_analysis(data_path='Data/neuron_barcodes_full_roi.npz',
     results['ngs_correlation']['figure'].savefig(
         f'{output_dir}/ngs_correlation.png', dpi=300, bbox_inches='tight')
     
+    # 8. Hamming Distance Analysis
+    print("Running Hamming distance analysis...")
+    results['hamming_distance'] = hamming_distance_analysis(
+        thresholded, neuron_classifications)
+    results['hamming_distance']['figure'].savefig(
+        f'{output_dir}/hamming_distance_analysis.png', dpi=300, bbox_inches='tight')
+    
+    if results['hamming_distance']['population_analysis'] is not None:
+        results['hamming_distance']['population_analysis']['figure'].savefig(
+            f'{output_dir}/hamming_distance_by_population.png', dpi=300, bbox_inches='tight')
+    
+    # 9. Barcode Collision Analysis
+    print("Running barcode collision analysis...")
+    results['barcode_collision'] = barcode_collision_analysis(thresholded)
+    results['barcode_collision']['figure'].savefig(
+        f'{output_dir}/barcode_collision_analysis.png', dpi=300, bbox_inches='tight')
+    
     # Generate summary CSV file
     summary_data = {
         'Analysis': [
             'Co-occurrence Analysis',
-            'Hierarchical Clustering',
             'Infection Marker Correlation',
-            'Channel Preference Analysis',
-            'Dimensionality Reduction',
-            'Network Analysis',
-            'NGS Correlation Analysis'
+            'NGS Correlation Analysis',
+            'Hamming Distance Analysis',
+            'Barcode Collision Analysis'
         ],
         'Key Findings': [
             f"Differential co-occurrence strength: {np.max(results['co_occurrence']['diff_cooccur']):.2f}",
-            "Hierarchical clustering successfully separates neuron populations",
             f"Overall correlation with viral load: {results['infection_correlation']['overall_correlation'][0]:.2f} (p={results['infection_correlation']['overall_correlation'][1]:.4f})",
-            f"Most preferred channel in overexpressors: {channel_names[np.argmax(results['channel_preference']['overexp_pref'])]}",
-            "t-SNE analysis reveals clear separation between populations",
-            f"Network density (Expected Population): {nx.density(results['network_analysis']['expected_pop_network']):.3f}",
-            f"Viral freq. correlation with overexpressors: {results['ngs_correlation']['viral_correlations']['overexpressors']:.2f}"
+            f"Viral freq. correlation with overexpressors: {results['ngs_correlation']['viral_correlations']['overexpressors']:.2f}",
+            f"Mean Hamming distance to closest match: {results['hamming_distance']['mean_distance']:.2f} bits",
+            f"Unique barcode patterns: {results['barcode_collision']['unique_patterns']} out of {results['barcode_collision']['summary_stats']['total_cells']} cells"
         ]
     }
     
@@ -734,30 +953,25 @@ def run_comprehensive_analysis(data_path='Data/neuron_barcodes_full_roi.npz',
         f.write("The heatmaps show co-expression frequencies, with the differential map highlighting\n")
         f.write("epitope combinations that are enriched in the Overexpressors population.\n\n")
         
-        f.write("## 2. Hierarchical Clustering Analysis\n")
-        f.write("This dendrogram shows how neurons cluster based on their epitope expression patterns,\n")
-        f.write("revealing potential subpopulations within the main Expected Population and Overexpressors groups.\n\n")
-        
-        f.write("## 3. Infection Marker Correlation Analysis\n")
+        f.write("## 2. Infection Marker Correlation Analysis\n")
         f.write("This analysis examines the relationship between viral load (as measured by total signal intensity)\n")
         f.write("and the number of channels expressed, providing insights into infection dynamics in each population.\n\n")
         
-        f.write("## 4. Channel Preference Analysis\n")
-        f.write("This analysis identifies epitopes that are preferentially expressed in one population versus the other,\n")
-        f.write("potentially revealing biological differences in infection susceptibility or expression mechanisms.\n\n")
-        
-        f.write("## 5. Dimensionality Reduction Analysis\n")
-        f.write("The t-SNE visualization maps the high-dimensional epitope expression patterns into 2D space,\n")
-        f.write("revealing the separation between neuron populations and potential substructures within them.\n\n")
-        
-        f.write("## 6. Epitope Network Analysis\n")
-        f.write("These network diagrams visualize epitope co-expression patterns as a graph, with nodes representing\n")
-        f.write("epitopes (sized by frequency) and edges representing co-expression strength, highlighting differences\n")
-        f.write("in co-expression patterns between the two populations.\n\n")
-        
-        f.write("## 7. NGS Correlation Analysis\n")
+        f.write("## 3. NGS Correlation Analysis\n")
         f.write("This analysis correlates epitope expression frequencies with viral and plasmid frequencies from NGS data,\n")
         f.write("investigating how the input viral pool composition influences expression patterns in each population.\n\n")
+        
+        f.write("## 4. Hamming Distance Analysis\n")
+        f.write("This analysis examines the Hamming distances between barcodes, focusing on each neuron's closest match.\n")
+        f.write(f"The mean Hamming distance to the closest match is {results['hamming_distance']['mean_distance']:.2f} bits.\n")
+        f.write("The distribution of these distances provides insights into the uniqueness and distinguishability of the barcodes.\n\n")
+        
+        f.write("## 5. Barcode Collision Analysis\n")
+        f.write("This analysis quantifies how many cells have unique barcodes versus how many share the same barcode pattern with other cells.\n")
+        f.write(f"Out of {results['barcode_collision']['summary_stats']['total_cells']} total cells, there are {results['barcode_collision']['unique_patterns']} unique barcode patterns.\n")
+        f.write("### Collision Distribution Table\n\n")
+        f.write(results['barcode_collision']['markdown_table'])
+        f.write("\n\n")
     
     print(f"All analyses complete. Results saved to {output_dir}/")
     return results 

@@ -5,37 +5,20 @@ This analysis reveals which epitopes tend to be expressed together in each popul
 The heatmaps show co-expression frequencies, with the differential map highlighting
 epitope combinations that are enriched in the Overexpressors population.
 
-## 2. Hierarchical Clustering Analysis
-This dendrogram shows how neurons cluster based on their epitope expression patterns,
-revealing potential subpopulations within the main Expected Population and Overexpressors groups.
-
-## 3. Infection Marker Correlation Analysis
+## 2. Infection Marker Correlation Analysis
 This analysis examines the relationship between viral load (as measured by total signal intensity)
 and the number of channels expressed, providing insights into infection dynamics in each population.
 
-## 4. Channel Preference Analysis
-This analysis identifies epitopes that are preferentially expressed in one population versus the other,
-potentially revealing biological differences in infection susceptibility or expression mechanisms.
-
-## 5. Dimensionality Reduction Analysis
-The t-SNE visualization maps the high-dimensional epitope expression patterns into 2D space,
-revealing the separation between neuron populations and potential substructures within them.
-
-## 6. Epitope Network Analysis
-These network diagrams visualize epitope co-expression patterns as a graph, with nodes representing
-epitopes (sized by frequency) and edges representing co-expression strength, highlighting differences
-in co-expression patterns between the two populations.
-
-## 7. NGS Correlation Analysis
+## 3. NGS Correlation Analysis
 This analysis correlates epitope expression frequencies with viral and plasmid frequencies from NGS data,
 investigating how the input viral pool composition influences expression patterns in each population.
 
-## 8. Hamming Distance Analysis
+## 4. Hamming Distance Analysis
 This analysis examines the Hamming distances between barcodes, focusing on each neuron's closest match.
 The mean Hamming distance to the closest match is 0.71 bits.
 The distribution of these distances provides insights into the uniqueness and distinguishability of the barcodes.
 
-## 9. Barcode Collision Analysis
+## 5. Barcode Collision Analysis
 This analysis quantifies how many cells have unique barcodes versus how many share the same barcode pattern with other cells.
 Out of 1183 total cells, there are 685 unique barcode patterns.
 ### Collision Distribution Table
@@ -56,10 +39,4 @@ Out of 1183 total cells, there are 685 unique barcode patterns.
 | 28.0 | 29.0 | 2.45% |
 | 29.0 | 30.0 | 2.54% |
 | 44.0 | 45.0 | 3.80% |
-
-Notes:
-- Largest collision of 44 is actually just all segments that express all zeros
-- second largest group of collisions are segments tthat only express E1 Barcode
-- the group of 28 collisions is the 29 cells that express 18 channels. 
-- following 25 and 24 collision are also S1 and ALFA only expressing segments. 
 
