@@ -17,14 +17,6 @@ and the number of channels expressed, providing insights into infection dynamics
 This analysis identifies epitopes that are preferentially expressed in one population versus the other,
 potentially revealing biological differences in infection susceptibility or expression mechanisms.
 
-## 5. Dimensionality Reduction Analysis
-The t-SNE visualization maps the high-dimensional epitope expression patterns into 2D space,
-revealing the separation between neuron populations and potential substructures within them.
-
-## 6. Epitope Network Analysis
-These network diagrams visualize epitope co-expression patterns as a graph, with nodes representing
-epitopes (sized by frequency) and edges representing co-expression strength, highlighting differences
-in co-expression patterns between the two populations.
 
 ## 7. NGS Correlation Analysis
 This analysis correlates epitope expression frequencies with viral and plasmid frequencies from NGS data,
