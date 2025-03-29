@@ -1,10 +1,3 @@
-"""
-plot_settings.py
-
-This file contains standardized plotting settings to ensure consistency across
-all barcode analysis visualizations.
-"""
-
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import seaborn as sns

@@ -25,13 +25,17 @@ barcode_lengths = np.sum(soma_barcodes, axis=1)
 
 plt.figure(figsize=FIG_SIZE)
 
-ax = sns.histplot(barcode_lengths, kde=False, bins=range(19), discrete=True, color=MAIN_COLOR, stat='percent')
+ax = sns.histplot(barcode_lengths, kde=False, bins=range(19), discrete=True, color=MAIN_COLOR)
 
-ax.grid(False) # turning off the grid
+
+# sns.despine(left=True, bottom=True)
+ax.grid(False)
+sns.despine()
+.
 
 # Add labels and title
 plt.xlabel('Barcode Length')
-plt.ylabel('Frequency (%)')
+plt.ylabel('Frequency (counts)')
 plt.title(f'Distribution of Barcode Lengths Across {len(barcode_lengths)} Somas')
 
 # Set x-axis ticks to include all possible barcode lengths (0 to 18)
@@ -58,7 +62,7 @@ output_dir = "/home/aashir/repos/barcode_analysis/Preprint-Barcode-Analysis/Plot
 timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
 plot_filename = f"{output_dir}/somas_barcode_length_distr.png"
 plt.tight_layout()
-plt.savefig(plot_filename, dpi=300)
+plt.savefig(plot_filename, dpi=500)
 plt.close()
 
 # Also print basic statistics
