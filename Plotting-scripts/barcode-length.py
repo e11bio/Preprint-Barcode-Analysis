@@ -8,7 +8,7 @@ import os
 from scipy.stats import entropy
 
 # Import plotting settings
-from plot_settings import MAIN_COLOR, SECONDARY_COLOR, FIG_SIZE, set_style
+from plot_settings import MAIN_COLOR, SECONDARY_COLOR, FIG_SIZE, set_style, DPI
 
 # Import functions from soma-preprocessing.py
 from soma_preprocessing import (
@@ -20,18 +20,24 @@ soma_barcodes = generate_barcode_array()
 
 
 # creating a plot of barcode length 
+set_style()
 
 barcode_lengths = np.sum(soma_barcodes, axis=1)
 
-plt.figure(figsize=FIG_SIZE)
+plt.figure(figsize=FIG_SIZE, dpi=DPI)
 
 ax = sns.histplot(barcode_lengths, kde=False, bins=range(19), discrete=True, color=MAIN_COLOR)
+
+# Set the bar color to #1f77b4
+for patch in ax.patches:
+    patch.set_facecolor('#1f77b4')
+    patch.set_edgecolor('black')
+    patch.set_linewidth(0.5)
 
 
 # sns.despine(left=True, bottom=True)
 ax.grid(False)
 sns.despine()
-.
 
 # Add labels and title
 plt.xlabel('Barcode Length')
@@ -50,10 +56,10 @@ median_length = np.median(barcode_lengths)
 max_length = np.max(barcode_lengths)
 
 # Add statistics as text
-stats_text = f"Mean: {mean_length:.2f}"
-plt.text(0.95, 0.95, stats_text, transform=plt.gca().transAxes, 
-         verticalalignment='top', horizontalalignment='right',
-         bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8), fontsize=12)
+# stats_text = f"Mean: {mean_length:.2f}"
+# plt.text(0.95, 0.95, stats_text, transform=plt.gca().transAxes, 
+#          verticalalignment='top', horizontalalignment='right',
+#          bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8), fontsize=12)
 
 # Create output directory if it doesn't exist
 output_dir = "/home/aashir/repos/barcode_analysis/Preprint-Barcode-Analysis/Plotting-scripts/Output"

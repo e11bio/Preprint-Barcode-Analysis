@@ -5,8 +5,8 @@ import os
 import pandas as pd
 
 # Figure dimensions
-FIG_WIDTH = 10  # inches
-FIG_HEIGHT = 6  # inches
+FIG_WIDTH = 6  # inches
+FIG_HEIGHT = 4  # inches
 FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
 # Colors
@@ -20,11 +20,11 @@ plt.rcParams["font.family"] = FONT_FAMILY
 plt.rcParams["font.sans-serif"] = [FONT_FAMILY, "sans-serif"]
 
 # Font sizes
-TITLE_SIZE = 15
-LABEL_SIZE = 12
-TICK_SIZE = 10
-LEGEND_SIZE = 10
-ANNOTATION_SIZE = 12
+TITLE_SIZE = 8
+LABEL_SIZE = 8
+TICK_SIZE = 8
+LEGEND_SIZE = 8
+ANNOTATION_SIZE = 8
 
 # Line settings
 LINE_WIDTH = 1.5
