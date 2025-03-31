@@ -1,5 +1,4 @@
 # this script generates a plot for epitope distribution 
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -28,7 +27,6 @@ mean_percentage = np.mean(epitope_percentages)
 median_percentage = np.median(epitope_percentages)
 
 # Create a DataFrame for easier plotting with the target names
-# Extract just the first part of each epitope name (before "-barcode")
 simplified_epitopes = [name.split('-')[0] for name in target_channels]
 epitope_df = pd.DataFrame({
     'Epitope': simplified_epitopes,
@@ -48,11 +46,25 @@ plt.grid(False)
 ax = plt.gca()
 ax.grid(False)
 
-# Despine the plot (remove top and right spines)
-sns.despine()
+# Ensure all text is black
+ax.title.set_color('black')
+ax.xaxis.label.set_color('black')
+ax.yaxis.label.set_color('black')
+for text in ax.get_xticklabels() + ax.get_yticklabels():
+    text.set_color('black')
+    text.set_fontfamily('Arial')
+    text.set_fontsize(8)
 
-# Set x-axis label font size to 8
+sns.despine()
 plt.xticks(fontsize=8)
+
+# Add a horizontal line for the mean percentage
+mean_line = plt.axhline(y=mean_percentage, color='grey', linestyle='--', alpha=0.7)
+
+# Add a legend for the mean line with dashed line symbol
+plt.legend([mean_line], ['Mean ({:.1f}%)'.format(mean_percentage)], loc='upper right', frameon=False)
+
+
 
 # Add percentage labels only for the lowest and highest bars
 min_idx = epitope_df['Percentage'].idxmin()
@@ -113,9 +125,3 @@ with open(md_filename, 'w') as md_file:
 
 print(f"Plot saved to {plot_filename}")
 print(f"Markdown documentation saved to {md_filename}")
-
-
-
-# lowest and the highest, no other percentages in between
-# get rid of mean
-

@@ -4,6 +4,9 @@ import seaborn as sns
 import os
 import pandas as pd
 
+# Output directory, change depending on user, I used my absolute path. 
+OUTPUT_DIR = "/home/aashir/repos/barcode_analysis/Preprint-Barcode-Analysis/Plotting-scripts/Output"
+
 # Figure dimensions
 FIG_WIDTH = 6  # inches
 FIG_HEIGHT = 4  # inches
