@@ -85,7 +85,7 @@ for i, p in enumerate(bars.patches):
                      ha=h_align, va='bottom')
 
 # Add labels and title
-plt.xlabel('Epitope')
+plt.xlabel('Channel')
 plt.ylabel('Percentage of Cells (%)')
 plt.title(f'Percentage of Somas Containing Each Epitope (n={len(soma_barcodes)})')
 
