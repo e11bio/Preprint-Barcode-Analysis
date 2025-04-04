@@ -7,7 +7,7 @@ import os
 from scipy.stats import entropy
 
 # Import plotting settings
-from plot_settings import MAIN_COLOR, SECONDARY_COLOR, FIG_SIZE, set_style, DPI
+from plot_settings import MAIN_COLOR, SECONDARY_COLOR, FIG_SIZE_HISTOGRAM, set_style, DPI, OUTPUT_DIR
 
 # Import functions from soma-preprocessing.py
 from soma_preprocessing import (
@@ -34,9 +34,12 @@ epitope_df = pd.DataFrame({
 })
 
 # Sort from highest to lowest percentage for better visualization
-epitope_df = epitope_df.sort_values('Percentage', ascending=False)
+epitope_df = epitope_df.sort_values('Percentage', ascending=True)
 
 # Create the plot
+# modify fig size to be
+FIG_SIZE = (3, 2.5)
+
 plt.figure(figsize=FIG_SIZE, dpi=DPI)
 set_style()  # Apply the standard plotting style
 bars = sns.barplot(x='Epitope', y='Percentage', data=epitope_df, color=MAIN_COLOR)
@@ -50,19 +53,19 @@ ax.grid(False)
 ax.title.set_color('black')
 ax.xaxis.label.set_color('black')
 ax.yaxis.label.set_color('black')
-for text in ax.get_xticklabels() + ax.get_yticklabels():
-    text.set_color('black')
-    text.set_fontfamily('Arial')
-    text.set_fontsize(8)
+# for text in ax.get_xticklabels() + ax.get_yticklabels():
+#     text.set_color('black')
+#     text.set_fontfamily('Arial')
+#     text.set_fontsize(8)
 
 sns.despine()
-plt.xticks(fontsize=8)
+# plt.xticks(fontsize=8)
 
 # Add a horizontal line for the mean percentage
 mean_line = plt.axhline(y=mean_percentage, color='grey', linestyle='--', alpha=0.7)
 
 # Add a legend for the mean line with dashed line symbol
-plt.legend([mean_line], ['Mean ({:.1f}%)'.format(mean_percentage)], loc='upper right', frameon=False)
+# plt.legend([mean_line], ['Mean ({:.1f}%)'.format(mean_percentage)], loc='upper left', frameon=False)
 
 
 
@@ -78,7 +81,7 @@ for i, p in enumerate(bars.patches):
         
         # Push the highest bar's label slightly to the right
         if i == 0:  # This is the highest bar
-            x_pos += 0.1  # Shift to the right
+            x_pos += 0.8  # Shift to the right
         
         bars.annotate(f'{p.get_height():.1f}%', 
                      (x_pos, p.get_height()),
@@ -87,15 +90,19 @@ for i, p in enumerate(bars.patches):
 # Add labels and title
 plt.xlabel('Channel')
 plt.ylabel('Percentage of Cells (%)')
-plt.title(f'Percentage of Somas Containing Each Epitope (n={len(soma_barcodes)})')
+plt.title(f'Percentage of somas containing epitope (n={len(soma_barcodes)})')
 
 # Rotate x-axis labels for better readability
-plt.xticks(rotation=45, ha='right')
+plt.xticks(rotation=90, ha='center')
 
+# set the y axis to 0-40
+plt.ylim(0, 50)
 # Adjust layout
 plt.tight_layout()
 
-output_dir = "/home/aashir/repos/barcode_analysis/Preprint-Barcode-Analysis/Plotting-scripts/Output"
+output_dir = "./out"
+# make the output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
 
 plot_filename = os.path.join(output_dir, "epitope_distribution.png")
 plt.savefig(plot_filename, dpi=500)

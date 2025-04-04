@@ -8,7 +8,7 @@ import os
 from scipy.stats import entropy
 
 # Import plotting settings
-from plot_settings import MAIN_COLOR, SECONDARY_COLOR, FIG_SIZE, set_style, DPI
+from plot_settings import MAIN_COLOR, SECONDARY_COLOR, FIG_SIZE_HISTOGRAM, set_style, DPI, OUTPUT_DIR
 
 # Import functions from soma-preprocessing.py
 from soma_preprocessing import (
@@ -24,20 +24,22 @@ set_style()
 
 barcode_lengths = np.sum(soma_barcodes, axis=1)
 
-plt.figure(figsize=FIG_SIZE, dpi=DPI)
+plt.figure(figsize=FIG_SIZE_HISTOGRAM, dpi=DPI)
 
 ax = sns.histplot(barcode_lengths, kde=False, bins=range(19), discrete=True, color=MAIN_COLOR)
 
 # Set the bar color to #1f77b4
 for patch in ax.patches:
     patch.set_facecolor('#1f77b4')
-    patch.set_edgecolor('black')
-    patch.set_linewidth(0.5)
+    # patch.set_edgecolor('black')
+    patch.set_linewidth(0.1)
 
 
 # sns.despine(left=True, bottom=True)
 ax.grid(False)
-sns.despine()
+sns.despine()  # Only remove left, top, and right spines
+
+
 
 # Add labels and title
 plt.xlabel('Barcode Length')
@@ -45,7 +47,10 @@ plt.ylabel('Frequency (counts)')
 plt.title(f'Distribution of Barcode Lengths Across {len(barcode_lengths)} Somas')
 
 # Set x-axis ticks to include all possible barcode lengths (0 to 18)
-plt.xticks(range(19))
+# get the max length
+max_length = np.max(barcode_lengths)
+plt.xticks(range(max_length + 1))
+
 
 # Add a grid for better readability
 # plt.grid(axis='y', alpha=0.3)
@@ -62,7 +67,7 @@ max_length = np.max(barcode_lengths)
 #          bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8), fontsize=12)
 
 # Create output directory if it doesn't exist
-output_dir = "/home/aashir/repos/barcode_analysis/Preprint-Barcode-Analysis/Plotting-scripts/Output"
+output_dir = OUTPUT_DIR
 
 # Save the plot
 timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")

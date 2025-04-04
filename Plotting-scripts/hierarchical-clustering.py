@@ -1,6 +1,4 @@
 # this script generates a hierarchical clustering plot of the soma barcodes
-
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,9 +9,11 @@ from scipy.spatial.distance import pdist, squareform
 from scipy.cluster.hierarchy import linkage, leaves_list
 
 from plot_settings import (
-    MAIN_COLOR, SECONDARY_COLOR, FIG_SIZE, set_style, DPI, OUTPUT_DIR,
+    MAIN_COLOR, SECONDARY_COLOR, FIG_SIZE_HEATMAP, set_style, DPI, OUTPUT_DIR,
     TITLE_SIZE, LABEL_SIZE, TICK_SIZE, LEGEND_SIZE, ANNOTATION_SIZE, FONT_FAMILY
 )
+
+# FIG_SIZE = (2.2, 3.5)
 
 from soma_preprocessing import (
     generate_barcode_array,
@@ -50,15 +50,13 @@ def create_hierarchical_clustered_heatmap(soma_barcodes, method=None, output_pat
     
     set_style()
     # Create figure for the heatmap
-    fig = plt.figure(figsize=(4,6), dpi=DPI)
+    fig = plt.figure(figsize=FIG_SIZE_HEATMAP, dpi=DPI)
     ax_heatmap = plt.gca()
  
     # Plot the heatmap with inverted colors (binary_r) and no grid lines
     ax = sns.heatmap(clustered_barcodes, ax=ax_heatmap, cmap='binary_r',
                 yticklabels=False, cbar=False, vmin=0, vmax=1,
                 linewidths=0, linecolor='white')  # Removed grid by setting linewidths=0
-    
-    
 
     # Set x-axis labels for the target channels with simplified names
     channel_names = ['E2', 'S1', 'ALFA', 'Ty1', 'HA', 'T7', 
@@ -71,9 +69,12 @@ def create_hierarchical_clustered_heatmap(soma_barcodes, method=None, output_pat
 
     ax_heatmap.set_ylabel('Somas (n=147)', fontsize=LABEL_SIZE)
     
+    # add a space between each column
+    #  for i in range(1, n_channels):
+    #     ax_heatmap.axvline(x=i, color='white', linestyle='-', linewidth=1.5, alpha=0.5)
     # Add vertical grey lines between columns
     for i in range(1, n_channels):
-        ax_heatmap.axvline(x=i, color='grey', linestyle='-', linewidth=1.5, alpha=0.5)
+        ax_heatmap.axvline(x=i, color='gray', linestyle='-', linewidth=.5, alpha=1)
 
     ax.grid(False)
     
@@ -153,4 +154,4 @@ n_somas, n_channels = soma_barcodes.shape
 create_markdown_description(output_path, method, n_somas, n_channels)
 
 # Show the plot (optional - can be commented out for automated runs)
-plt.show()
+# plt.show()

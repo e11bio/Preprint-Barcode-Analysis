@@ -5,12 +5,17 @@ import os
 import pandas as pd
 
 # Output directory, change depending on user, I used my absolute path. 
-OUTPUT_DIR = "/home/aashir/repos/barcode_analysis/Preprint-Barcode-Analysis/Plotting-scripts/Output"
+OUTPUT_DIR = "./out"
 
 # Figure dimensions
-FIG_WIDTH = 6  # inches
-FIG_HEIGHT = 4  # inches
+FIG_WIDTH = 3  # inches = 152 mm 
+FIG_HEIGHT = 2  # inches = 102 mm
 FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
+
+# for the two histograms
+
+FIG_SIZE_HISTOGRAM = (3, 2.5)
+FIG_SIZE_HEATMAP = (2.5, 4)
 
 # Colors
 MAIN_COLOR = "#1f77b4"  # Blue
@@ -47,7 +52,8 @@ def set_style():
         "grid.alpha": GRID_ALPHA,
         "grid.linewidth": GRID_LINE_WIDTH,
         "axes.edgecolor": "black",
-        "axes.linewidth": 1.0
+        "axes.linewidth": 1.0,
+        "context": "paper"
     })
     
     # Set matplotlib rcParams
