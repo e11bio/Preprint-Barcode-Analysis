@@ -153,7 +153,7 @@ def generate_barcode_array():
     processed_df, score_columns = process_zarr(df)
 
     # soma filtering dataset, in this case we aren't actually filtering anything out. 
-    csv_path = "../Data/LS-somas.csv"  # convert to relative path
+    csv_path = "./soma_barcode_info.csv"  # convert to relative path
     filtered_df = filter_somas(processed_df, csv_path)
 
     soma_barcodes = filtered_df[target_channels].values
