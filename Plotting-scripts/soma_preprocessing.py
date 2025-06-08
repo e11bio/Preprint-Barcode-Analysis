@@ -1,8 +1,8 @@
 # This file will contains functions to preprocess SOMA data
 
-import zarr #open files
+import zarr  # open files
 import sklearn.metrics as sn
-from sklearn.decomposition import PCA 
+from sklearn.decomposition import PCA
 import scipy.stats as stats
 import numpy as np
 import pandas as pd
@@ -18,103 +18,108 @@ from itertools import combinations
 import datetime
 
 channel_targets = {
-'ch_0': 'E2-barcode-R1',
-'ch_1': 'S1-barcode-R1',
-'ch_2': 'ALFA-barcode-R1',
-'ch_3': 'Ty1-barcode-R2',
-'ch_4': 'GFAP-marker-R2',
-'ch_5': 'ALFA-barcode-R2',
-'ch_6': 'VGAT-marker-R3',
-'ch_7': 'GABRA1-marker-R3',
-'ch_8': 'HA-barcode-R3',
-'ch_9': 'ALFA-barcode-R3',
-'ch_10': 'PSD-95-marker-R4',
-'ch_11': 'Bassoon-marker-R4',
-'ch_12': 'ALFA-barcode-R4',
-'ch_13': 'Beta-Amyloid-marker-R5',
-'ch_14': 'c-Myc-barcode-R5',
-'ch_15': 'ALFA-barcode-R5',
-'ch_16': 'T7-barcode-R6',
-'ch_17': 'ALFA-barcode-R6',
-'ch_18': 'Synapsin-marker-R6',
-'ch_19': 'VSVG-barcode-R6',
-'ch_20': 'Shank2-marker-R7',
-'ch_21': 'Bassoon-marker-R7',
-'ch_22': 'ALFA-barcode-R7',
-'ch_23': 'ALFA-barcode-R8',
-'ch_24': 'AU5-barcode-R8',
-'ch_25': 'ALFA-barcode-R9',
-'ch_26': 'NWS-barcode-R9',
-'ch_27': 'SunTag-barcode-R9',
-'ch_28': 'ETAG-barcode-R9',
-'ch_29': 'SPOT-barcode-R10',
-'ch_30': 'MoonTag-barcode-R10',
-'ch_31': 'ALFA-barcode-R10',
-'ch_32': 'HSV Tag-barcode-R10',
-'ch_33': 'Protein C-barcode-R11',
-'ch_34': 'Tag100-barcode-R11',
-'ch_35': 'ALFA-barcode-R11',
-'ch_36': 'CMyc-barcode-R11',
-'ch_37': 'OLLAS-barcode-R12',
-'ch_38': 'GFP-marker-R12',
-'ch_39': 'AU5-barcode-R12'
+    "ch_0": "E2-barcode-R1",
+    "ch_1": "S1-barcode-R1",
+    "ch_2": "ALFA-barcode-R1",
+    "ch_3": "Ty1-barcode-R2",
+    "ch_4": "GFAP-marker-R2",
+    "ch_5": "ALFA-barcode-R2",
+    "ch_6": "VGAT-marker-R3",
+    "ch_7": "GABRA1-marker-R3",
+    "ch_8": "HA-barcode-R3",
+    "ch_9": "ALFA-barcode-R3",
+    "ch_10": "PSD-95-marker-R4",
+    "ch_11": "Bassoon-marker-R4",
+    "ch_12": "ALFA-barcode-R4",
+    "ch_13": "Beta-Amyloid-marker-R5",
+    "ch_14": "c-Myc-barcode-R5",
+    "ch_15": "ALFA-barcode-R5",
+    "ch_16": "T7-barcode-R6",
+    "ch_17": "ALFA-barcode-R6",
+    "ch_18": "Synapsin-marker-R6",
+    "ch_19": "VSVG-barcode-R6",
+    "ch_20": "Shank2-marker-R7",
+    "ch_21": "Bassoon-marker-R7",
+    "ch_22": "ALFA-barcode-R7",
+    "ch_23": "ALFA-barcode-R8",
+    "ch_24": "AU5-barcode-R8",
+    "ch_25": "ALFA-barcode-R9",
+    "ch_26": "NWS-barcode-R9",
+    "ch_27": "SunTag-barcode-R9",
+    "ch_28": "ETAG-barcode-R9",
+    "ch_29": "SPOT-barcode-R10",
+    "ch_30": "MoonTag-barcode-R10",
+    "ch_31": "ALFA-barcode-R10",
+    "ch_32": "HSV Tag-barcode-R10",
+    "ch_33": "Protein C-barcode-R11",
+    "ch_34": "Tag100-barcode-R11",
+    "ch_35": "ALFA-barcode-R11",
+    "ch_36": "CMyc-barcode-R11",
+    "ch_37": "OLLAS-barcode-R12",
+    "ch_38": "GFP-marker-R12",
+    "ch_39": "AU5-barcode-R12",
 }
 
 target_channels = [
-'E2-barcode-R1',
-'S1-barcode-R1',
-'ALFA-barcode-R1',
-'Ty1-barcode-R2',
-'HA-barcode-R3',
-'T7-barcode-R6',
-'VSVG-barcode-R6',
-'AU5-barcode-R8',
-'NWS-barcode-R9',
-'SunTag-barcode-R9',
-'ETAG-barcode-R9',
-'SPOT-barcode-R10',
-'MoonTag-barcode-R10',
-'HSV Tag-barcode-R10',
-'Protein C-barcode-R11',
-'Tag100-barcode-R11',
-'CMyc-barcode-R11',
-'OLLAS-barcode-R12'
+    "E2-barcode-R1",
+    "S1-barcode-R1",
+    "ALFA-barcode-R1",
+    "Ty1-barcode-R2",
+    "HA-barcode-R3",
+    "T7-barcode-R6",
+    "VSVG-barcode-R6",
+    "AU5-barcode-R8",
+    "NWS-barcode-R9",
+    "SunTag-barcode-R9",
+    "ETAG-barcode-R9",
+    "SPOT-barcode-R10",
+    "MoonTag-barcode-R10",
+    "HSV Tag-barcode-R10",
+    "Protein C-barcode-R11",
+    "Tag100-barcode-R11",
+    "CMyc-barcode-R11",
+    "OLLAS-barcode-R12",
 ]
 
 
 # input: csv file containing (index, segment_id)
 
+
 def import_zarr(file):
     vals = zarr.open(file, mode="r")
-    df = pd.DataFrame({'coords': vals['coords'][:].tolist(),
-                   'score': vals['score'][:].tolist(),
-                   'is_cell': vals['is_cell']})
+    df = pd.DataFrame(
+        {
+            "coords": vals["coords"][:].tolist(),
+            "score": vals["score"][:].tolist(),
+            "is_cell": vals["is_cell"],
+        }
+    )
     return df
 
 
 def process_zarr(df):
-    max_score_length = max(len(score) for score in df['score'])
-    score_columns = [f'ch_{i}' for i in range(max_score_length)]
-    
-    # Split the 'score' column into individual columns
-    df[score_columns] = pd.DataFrame(df['score'].tolist(), index=df.index)
+    max_score_length = max(len(score) for score in df["score"])
+    score_columns = [f"ch_{i}" for i in range(max_score_length)]
 
-    #get coordinates for each cell
-    df[['z', 'y', 'x']] = pd.DataFrame(df['coords'].tolist(), index=df.index)
+    # Split the 'score' column into individual columns
+    df[score_columns] = pd.DataFrame(df["score"].tolist(), index=df.index)
+
+    # get coordinates for each cell
+    df[["z", "y", "x"]] = pd.DataFrame(df["coords"].tolist(), index=df.index)
 
     return df, score_columns
 
 
 def filter_somas(df, csv_path):
-
-   
-    # in the case of these plots, there is no filtering anymore because we are lookign at all somas. 
+    # in the case of these plots, there is no filtering anymore because we are lookign at all somas.
     # 1. Load the CSV file with soma information
     somas_csv = pd.read_csv(csv_path)
 
-    # 2. Filter out somas with segment ID of x: here we are not filtering anything out. 
-    id_column = 'segment_id' 
-    valid_somas = somas_csv[somas_csv[id_column] != 10000000] # change filter to 0 for filtering out non skeleton somas.
+    # 2. Filter out somas with segment ID of x: here we are not filtering anything out.
+    id_column = "segment_id"
+    valid_somas = somas_csv[
+        somas_csv[id_column] != 10000000
+    ]  # change filter to 0 for filtering out non skeleton somas.
 
     # 3. Get the valid indices to keep in the processed_df
     # These indices correspond to the positions in processed_df
@@ -126,7 +131,7 @@ def filter_somas(df, csv_path):
     # 5. Continue with the renaming columns logic
     rename_mapping = {}
     for column_name, target_name in channel_targets.items():
-    # Only include columns that exist in the DataFrame
+        # Only include columns that exist in the DataFrame
         if column_name in processed_df_filtered.columns:
             rename_mapping[column_name] = target_name
 
@@ -134,7 +139,7 @@ def filter_somas(df, csv_path):
     processed_df_filtered = processed_df_filtered.rename(columns=rename_mapping)
 
     # Define the non-channel columns you want to keep
-    non_channel_columns = ['coords', 'score', 'is_cell', 'z', 'y', 'x']
+    non_channel_columns = ["coords", "score", "is_cell", "z", "y", "x"]
 
     # Combine non-channel columns with target channels to create the list of columns to keep
     columns_to_keep = non_channel_columns + target_channels
@@ -142,17 +147,15 @@ def filter_somas(df, csv_path):
     # Filter the DataFrame to include only the specified columns
     filtered_df = processed_df_filtered[columns_to_keep]
 
-
     return processed_df_filtered
 
 
 def generate_barcode_array():
-
     zarr_path = "../LS-somas_AM.zarr"
     df = import_zarr(zarr_path)
     processed_df, score_columns = process_zarr(df)
 
-    # soma filtering dataset, in this case we aren't actually filtering anything out. 
+    # soma filtering dataset, in this case we aren't actually filtering anything out.
     csv_path = "./soma_barcode_info.csv"  # convert to relative path
     filtered_df = filter_somas(processed_df, csv_path)
 
@@ -163,9 +166,60 @@ def generate_barcode_array():
     return soma_barcodes
 
 
+def generate_barcode_array_with_coordinates():
+    """
+    Generate barcode array along with spatial coordinates and segment IDs.
+
+    This function ensures proper correspondence between array indices and segment IDs
+    by using the same filtering logic for all data.
+
+    Returns:
+    --------
+    soma_barcodes : numpy.ndarray
+        Binary barcode matrix
+    coordinates : numpy.ndarray
+        Spatial coordinates as [z, y, x] for each soma
+    segment_ids : list
+        List of segment IDs corresponding to each soma
+    array_indices : list
+        Original indices in the zarr array for each soma
+    """
+    zarr_path = "../LS-somas_AM.zarr"
+    df = import_zarr(zarr_path)
+    processed_df, score_columns = process_zarr(df)
+
+    # Load segment IDs from CSV to maintain correspondence
+    csv_path = "./soma_barcode_info.csv"  # convert to relative path
+    somas_csv = pd.read_csv(csv_path)
+    valid_somas = somas_csv[somas_csv["segment_id"] != 10000000]
+
+    # Get the valid indices (these are the row positions in the CSV that correspond to zarr indices)
+    valid_indices = valid_somas.index.tolist()
+    segment_ids = valid_somas["segment_id"].tolist()
+
+    # Filter processed_df using the same indices
+    filtered_df = processed_df.iloc[valid_indices]
+
+    # Apply the same renaming and column filtering as in filter_somas
+    rename_mapping = {}
+    for column_name, target_name in channel_targets.items():
+        if column_name in filtered_df.columns:
+            rename_mapping[column_name] = target_name
+
+    filtered_df = filtered_df.rename(columns=rename_mapping)
+
+    # Extract barcodes
+    soma_barcodes = filtered_df[target_channels].values
+    soma_barcodes = np.array(soma_barcodes)
+
+    # Extract spatial coordinates - these should now correspond properly to segment_ids
+    coordinates = filtered_df[["z", "y", "x"]].values
+
+    return soma_barcodes, coordinates, segment_ids, valid_indices
+
+
 # Running this script
 
 # soma_barcodes array, this is what is used for downstream plot analysis
 soma_barcodes = generate_barcode_array()
 print(soma_barcodes.shape)
-    
