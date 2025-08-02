@@ -14,13 +14,14 @@ FIG_SIZE = (FIG_WIDTH, FIG_HEIGHT)
 
 # for the two histograms
 
-FIG_SIZE_HISTOGRAM_barcode_lengths = (2, 2)
-FIG_SIZE_HISTOGRAM_epitope_dist = (2.8, 2)
-FIG_SIZE_HISTOGRAM_collisions = (1.5, 2)
+FIG_SIZE_HISTOGRAM_barcode_lengths = (1.8, 1.8)
+FIG_SIZE_HISTOGRAM_epitope_dist = (2.5, 1.8)
+FIG_SIZE_HISTOGRAM_collisions = (1.1, 1.2)
 FIG_SIZE_HEATMAP = (3.75, 2.2)
 
 # Colors
-MAIN_COLOR = "#1f77b4"  # Blue
+# MAIN_COLOR = "#1f77b4"  # Blue
+MAIN_COLOR = "silver"  # Silver
 SECONDARY_COLOR = "#ff7f0e"  # Orange
 COLOR_PALETTE = sns.color_palette(
     "tab10"
