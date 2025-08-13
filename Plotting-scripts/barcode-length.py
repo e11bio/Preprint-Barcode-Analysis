@@ -1,24 +1,22 @@
 # This script generates a plot for barcode distribution given a numpy array of binary barcodes.
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
-from scipy.stats import entropy
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+
 from soma_preprocessing import generate_barcode_array
-from datetime import datetime
 
 # Import plotting settings
 from plot_settings import (
-    MAIN_COLOR,
-    FIG_SIZE_HISTOGRAM_barcode_lengths,
-    set_style,
     DPI,
-    OUTPUT_DIR,
+    PlotStyle,
+    apply_style,
+    get_output_filename,
+    get_script_output_dir,
+    set_plot_style,
 )
-
-FIG_SIZE = FIG_SIZE_HISTOGRAM_barcode_lengths
 # Import functions from soma-preprocessing.py
 
 # soma_barcodes array, this is what is used for downstream plot analysis
@@ -27,31 +25,30 @@ soma_barcodes = generate_barcode_array()
 # load the soma_barcode_info.csv file
 
 
-def configure_barcode_plot():
+def configure_barcode_plot(settings):
     """Configure plot styling for barcode length analysis"""
-    set_style()
     sns.set_style("ticks")
     plt.rcParams.update(
         {
-            "font.size": 8,
-            "axes.labelsize": 8,
-            "axes.titlesize": 8,
-            "xtick.labelsize": 8,
-            "ytick.labelsize": 8,
+            "font.size": settings["tick_size"],
+            "axes.labelsize": settings["label_size"],
+            "axes.titlesize": settings["title_size"],
+            "xtick.labelsize": settings["tick_size"],
+            "ytick.labelsize": settings["tick_size"],
         }
     )
 
 
-def create_barcode_length_plot(barcode_lengths):
+def create_barcode_length_plot(barcode_lengths, settings):
     """Create histogram plot of barcode lengths"""
-    fig, ax = plt.subplots(figsize=FIG_SIZE_HISTOGRAM_barcode_lengths, dpi=DPI)
+    fig, ax = plt.subplots(figsize=settings["histogram_barcode_lengths"], dpi=DPI)
 
     # Create histogram
     sns.histplot(barcode_lengths, kde=False, bins=range(19), discrete=True, ax=ax)
 
     # Style the bars
     for patch in ax.patches:
-        patch.set_facecolor(MAIN_COLOR)
+        patch.set_facecolor(settings["main_color"])
         patch.set_linewidth(0.1)
 
     # Configure plot appearance
@@ -81,10 +78,15 @@ def calculate_statistics(barcode_lengths):
     }
 
 
-def save_plot_and_docs(fig, barcode_lengths, output_dir):
+def save_plot_and_docs(fig, barcode_lengths, output_dir, settings):
     """Save plot and create documentation"""
     # Save plot
-    plot_filename = os.path.join(output_dir, "barcode_length_distribution.png")
+    plot_filename = get_output_filename(
+        "barcode_length_distribution",
+        settings["style"],
+        "png",
+        script_name="barcode-length",
+    )
     fig.savefig(plot_filename, dpi=500, bbox_inches="tight")
     plt.close(fig)
 
@@ -123,24 +125,48 @@ The barcode length for each cell was calculated by summing the number of positiv
 
 if __name__ == "__main__":
     # Setup
-    configure_barcode_plot()
-    output_dir = os.path.join("./out", "barcode-length")
-    os.makedirs(output_dir, exist_ok=True)
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--style",
+        choices=["paper", "poster"],
+        default="paper",
+        help="Plot style to use (paper or poster)",
+    )
+    parser.add_argument(
+        "--font-size",
+        type=int,
+        help="Font size to use for poster mode",
+    )
+    args = parser.parse_args()
+
+    # Get plot settings
+    style = PlotStyle.POSTER if args.style == "poster" else PlotStyle.PAPER
+    settings = set_plot_style(style, font_size=args.font_size)
+
+    # Apply settings
+    apply_style(settings)
+    configure_barcode_plot(settings)
+
+    output_dir = get_script_output_dir("barcode-length")
 
     # Generate data
     soma_barcodes = generate_barcode_array()
     barcode_lengths = np.sum(soma_barcodes, axis=1)
 
     # Create plot
-    fig = create_barcode_length_plot(barcode_lengths)
+    fig = create_barcode_length_plot(barcode_lengths, settings)
 
     # Save everything
-    plot_file, doc_file, stats = save_plot_and_docs(fig, barcode_lengths, output_dir)
+    plot_file, doc_file, stats = save_plot_and_docs(
+        fig, barcode_lengths, output_dir, settings
+    )
 
     # Print summary
-    print(f"Barcode length analysis complete!")
+    print("Barcode length analysis complete!")
     print(f"Total cells: {stats['total_cells']}")
     print(f"Mean barcode length: {stats['mean_length']:.2f}")
-    print(f"Files saved:")
+    print("Files saved:")
     print(f"  - {plot_file}")
     print(f"  - {doc_file}")
