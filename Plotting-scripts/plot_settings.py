@@ -35,13 +35,11 @@ def get_script_output_dir(script_name: str) -> str:
 PAPER_SIZES = {
     "FIG_WIDTH": 3,  # inches = 152 mm
     "FIG_HEIGHT": 2,  # inches = 102 mm
-    # "HISTOGRAM_BARCODE_LENGTHS": (1.8, 5),
-    # "HISTOGRAM_EPITOPE_DIST": (2.5, 5),
-    # "HISTOGRAM_COLLISIONS": (1.1, 5),
-    "HISTOGRAM_BARCODE_LENGTHS": (1.8, 1.8),
-    "HISTOGRAM_EPITOPE_DIST": (2.5, 1.8),
-    "HISTOGRAM_COLLISIONS": (1.1, 1.5),
-    # "HEATMAP": (3.75, 20),
+    "HISTOGRAM_BARCODE_LENGTHS": (1.8, 1.9),
+    "HISTOGRAM_EPITOPE_DIST": (2.8, 1.9),
+    "HISTOGRAM_COLLISIONS": (1.4, 1.8),  #
+    "HISTOGRAM_HAMMING_DISTANCE": (2, 1.8),  # Wider for distance distribution
+    "HISTOGRAM_COLLISION_CATEGORIES": (1.3, 1.6),  # important one
     "HEATMAP": (1.2, 4),
 }
 
@@ -57,10 +55,9 @@ POSTER_SIZES = {
         6,
         4,
     ),  # Taller aspect ratio for better poster visibility
-    "HISTOGRAM_COLLISIONS": (
-        2,
-        4,
-    ),  # Taller aspect ratio for better poster visibility
+    "HISTOGRAM_COLLISIONS": (2, 4),  # Taller aspect ratio for better poster visibility
+    "HISTOGRAM_HAMMING_DISTANCE": (6, 4),  # Wider for distance distribution
+    "HISTOGRAM_COLLISION_CATEGORIES": (3, 4),  # Narrower for binary categories
     "HEATMAP": (1, 3.3),
 }
 
@@ -71,6 +68,7 @@ COLOR_PALETTE = sns.color_palette("tab10")
 
 # Font settings
 FONT_FAMILY = "Arial"
+FONT_FALLBACK = ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"]
 
 # Font sizes for paper and poster
 PAPER_FONT_SIZES = {"TITLE": 8, "LABEL": 8, "TICK": 8, "LEGEND": 8, "ANNOTATION": 8}
@@ -115,6 +113,8 @@ def set_plot_style(style: PlotStyle = PlotStyle.PAPER, font_size: int = None):
         "histogram_barcode_lengths": sizes["HISTOGRAM_BARCODE_LENGTHS"],
         "histogram_epitope_dist": sizes["HISTOGRAM_EPITOPE_DIST"],
         "histogram_collisions": sizes["HISTOGRAM_COLLISIONS"],
+        "histogram_hamming_distance": sizes["HISTOGRAM_HAMMING_DISTANCE"],
+        "histogram_collision_categories": sizes["HISTOGRAM_COLLISION_CATEGORIES"],
         "heatmap": sizes["HEATMAP"],
         "title_size": font_sizes["TITLE"],
         "label_size": font_sizes["LABEL"],
@@ -153,8 +153,8 @@ def apply_style(settings):
             "figure.figsize": settings["fig_size"],
             "figure.dpi": 100,  # Display DPI
             "savefig.dpi": DPI,
-            "font.family": settings["font_family"],
-            "font.sans-serif": [settings["font_family"], "sans-serif"],
+            "font.family": "sans-serif",
+            "font.sans-serif": FONT_FALLBACK,
             "font.size": settings["tick_size"],
             "axes.titlesize": settings["title_size"],
             "axes.labelsize": settings["label_size"],

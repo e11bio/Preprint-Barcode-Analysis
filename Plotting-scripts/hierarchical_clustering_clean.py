@@ -7,23 +7,18 @@ This script performs hierarchical clustering analysis by:
 3. Performing hierarchical clustering with specified linkage method
 4. Generating clean heatmaps with multiple variants and transparency options
 
-Author: Generated for barcode analysis
-Date: 2024
+
 """
 
+import os
+from typing import Any, Dict, List, Optional, Tuple
+
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import seaborn as sns
-import os
-
-from typing import List, Tuple, Optional, Dict, Any
 from matplotlib.colors import ListedColormap
-
-from scipy.spatial.distance import pdist
-from scipy.cluster.hierarchy import linkage, leaves_list
-
 from plot_settings import (
     DPI,
     PlotStyle,
@@ -32,7 +27,8 @@ from plot_settings import (
     get_script_output_dir,
     set_plot_style,
 )
-
+from scipy.cluster.hierarchy import leaves_list, linkage
+from scipy.spatial.distance import pdist
 from soma_preprocessing import (
     generate_barcode_array,
     generate_barcode_array_with_coordinates,
@@ -47,43 +43,151 @@ VOXEL_FACTOR = np.array([0.4, 0.168, 0.168])  # Voxel size factors (z, y, x)
 HIERARCHICAL_OUTPUT_DIR = get_script_output_dir("hierarchical-clustering")
 
 
+# def create_hierarchical_clustering(
+#     soma_barcodes: np.ndarray, method: str = DEFAULT_LINKAGE_METHOD
+# ) -> Tuple[np.ndarray, np.ndarray]:
+#     """
+#     Create hierarchical clustering of soma barcodes using Hamming distance.
+
+#     Parameters:
+#     -----------
+#     soma_barcodes : np.ndarray
+#         Binary barcode matrix (N x channels)
+#     method : str, optional
+#         Linkage method for clustering. Default is 'ward'.
+
+#     Returns:
+#     --------
+#     Tuple[np.ndarray, np.ndarray]
+#         Cluster order indices and reordered barcode matrix
+#     """
+#     n_somas, n_channels = soma_barcodes.shape
+#     print(
+#         f"Creating hierarchical clustering for {n_somas} somas with {n_channels} channels"
+#     )
+#     print(f"Using {method} linkage method")
+
+#     # Calculate Hamming distances between all pairs of somas
+#     hamming_distances = pdist(soma_barcodes, metric="hamming")
+
+#     # Create the linkage matrix
+#     Z = linkage(hamming_distances, method=method)
+
+#     # Get the order of samples from the hierarchical clustering
+#     cluster_order = leaves_list(Z)
+
+#     # Reorder the soma barcodes according to the clustering
+#     clustered_barcodes = soma_barcodes[cluster_order]
+
+#     return cluster_order, clustered_barcodes
+
+import numpy as np
+from typing import Tuple, Dict, Iterable
+from scipy.cluster.hierarchy import linkage, leaves_list, fcluster
+from scipy.spatial.distance import pdist, squareform
+from sklearn.metrics import silhouette_score
+
+DEFAULT_LINKAGE_METHOD = "ward"
+
+
 def create_hierarchical_clustering(
-    soma_barcodes: np.ndarray, method: str = DEFAULT_LINKAGE_METHOD
-) -> Tuple[np.ndarray, np.ndarray]:
+    soma_barcodes: np.ndarray,
+    method: str = DEFAULT_LINKAGE_METHOD,
+    metric: str = "hamming",
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Create hierarchical clustering of soma barcodes using Hamming distance.
+    Create hierarchical clustering of soma barcodes.
 
-    Parameters:
-    -----------
-    soma_barcodes : np.ndarray
-        Binary barcode matrix (N x channels)
-    method : str, optional
-        Linkage method for clustering. Default is 'ward'.
+    Parameters
+    ----------
+    soma_barcodes : (N, C) np.ndarray
+        Binary barcode matrix (rows = somas, cols = channels).
+    method : str
+        Linkage method. If 'ward', Euclidean is used on the raw observations (required).
+        For other methods (e.g., 'average', 'complete', 'single'), a condensed
+        distance matrix with `metric` is used.
+    metric : str
+        Distance metric for non-ward methods (e.g., 'hamming', 'jaccard').
 
-    Returns:
-    --------
-    Tuple[np.ndarray, np.ndarray]
-        Cluster order indices and reordered barcode matrix
+    Returns
+    -------
+    cluster_order : (N,) np.ndarray
+        Leaf order from the dendrogram.
+    clustered_barcodes : (N, C) np.ndarray
+        Rows reordered according to `cluster_order`.
+    Z : (N-1, 4) np.ndarray
+        Linkage matrix.
     """
     n_somas, n_channels = soma_barcodes.shape
-    print(
-        f"Creating hierarchical clustering for {n_somas} somas with {n_channels} channels"
-    )
-    print(f"Using {method} linkage method")
+    print(f"Clustering {n_somas} somas × {n_channels} channels using '{method}'")
 
-    # Calculate Hamming distances between all pairs of somas
-    hamming_distances = pdist(soma_barcodes, metric="hamming")
+    if method == "ward":
+        # Ward requires Euclidean distances and the observation matrix (not a condensed distance matrix).
+        Z = linkage(soma_barcodes.astype(float), method="ward", metric="euclidean")
+    else:
+        # For non-ward methods, use a precomputed condensed distance matrix with the chosen binary metric.
+        condensed = pdist(soma_barcodes, metric=metric)
+        Z = linkage(condensed, method=method)
 
-    # Create the linkage matrix
-    Z = linkage(hamming_distances, method=method)
-
-    # Get the order of samples from the hierarchical clustering
     cluster_order = leaves_list(Z)
-
-    # Reorder the soma barcodes according to the clustering
     clustered_barcodes = soma_barcodes[cluster_order]
+    return cluster_order, clustered_barcodes, Z
 
-    return cluster_order, clustered_barcodes
+
+def silhouette_summary_from_linkage(
+    soma_barcodes: np.ndarray,
+    Z: np.ndarray,
+    k_range: Iterable[int] = range(2, 11),
+    metric: str = "hamming",
+) -> Dict[str, object]:
+    """
+    Compute average silhouette over a range of flat cluster counts from a dendrogram.
+
+    Parameters
+    ----------
+    soma_barcodes : (N, C) np.ndarray
+        Binary barcode matrix.
+    Z : np.ndarray
+        Linkage matrix from `create_hierarchical_clustering`.
+    k_range : iterable of int
+        Candidate numbers of clusters to evaluate.
+    metric : str
+        Distance metric for silhouette ('hamming' or 'jaccard' are typical for binary).
+
+    Returns
+    -------
+    {
+      'best_k': int or None,
+      'best_score': float or None,
+      'scores': dict {k: score or None},
+      'n_valid': int
+    }
+    """
+    # Precompute full distance matrix for silhouette
+    D = squareform(pdist(soma_barcodes, metric=metric))
+    scores = {}
+    best_k, best_score = None, None
+    n_valid = 0
+
+    for k in k_range:
+        labels = fcluster(Z, t=k, criterion="maxclust")
+        # Silhouette requires at least 2 clusters and no singleton clusters (sklearn will error on singletons)
+        _, counts = np.unique(labels, return_counts=True)
+        if len(counts) < 2 or np.any(counts < 2):
+            scores[k] = None  # skip invalid k
+            continue
+        score = silhouette_score(D, labels, metric="precomputed")
+        scores[k] = float(score)
+        n_valid += 1
+        if (best_score is None) or (score > best_score):
+            best_k, best_score = k, float(score)
+
+    return {
+        "best_k": best_k,
+        "best_score": best_score,
+        "scores": scores,
+        "n_valid": n_valid,
+    }
 
 
 def plot_clustered_heatmap(
@@ -768,6 +872,7 @@ def save_clustering_results(
     segment_ids: List[int],
     linkage_method: str,
     output_dir: str,
+    silhouette_summary: Optional[Dict[str, object]] = None,
 ) -> Dict[str, str]:
     """
     Save clustering analysis results to files.
@@ -801,6 +906,16 @@ def save_clustering_results(
         "n_channels": clustered_barcodes.shape[1],
         "clustered_segment_ids": segment_ids,
     }
+
+    # Add silhouette information if available
+    if silhouette_summary is not None:
+        clustering_info.update(
+            {
+                "silhouette_best_k": silhouette_summary.get("best_k"),
+                "silhouette_best_score": silhouette_summary.get("best_score"),
+                "silhouette_n_valid": silhouette_summary.get("n_valid"),
+            }
+        )
 
     info_path = os.path.join(output_dir, "clustering_info.txt")
     with open(info_path, "w") as f:
@@ -841,6 +956,18 @@ def save_clustering_results(
     barcodes_df.to_csv(barcodes_path)
     output_files["clustered_barcodes"] = barcodes_path
 
+    # Save detailed silhouette scores if available
+    if silhouette_summary is not None and silhouette_summary.get("scores"):
+        silhouette_df = pd.DataFrame(
+            [
+                {"k": k, "silhouette_score": score}
+                for k, score in silhouette_summary["scores"].items()
+            ]
+        )
+        silhouette_path = os.path.join(output_dir, "silhouette_scores.csv")
+        silhouette_df.to_csv(silhouette_path, index=False)
+        output_files["silhouette_scores"] = silhouette_path
+
     # Save spatial coordinates if available
     try:
         _, coordinates, all_segment_ids, _ = generate_barcode_array_with_coordinates()
@@ -866,7 +993,7 @@ def save_clustering_results(
     except Exception as e:
         print(f"Warning: Could not save spatial coordinates: {e}")
 
-    print(f"Clustering results saved:")
+    print("Clustering results saved:")
     for key, path in output_files.items():
         print(f"  {key}: {path}")
 
@@ -907,7 +1034,7 @@ def hierarchical_clustering_analysis(
     Dict[str, Any]
         Dictionary containing analysis results and file paths
     """
-    print(f"Starting hierarchical clustering analysis...")
+    print("Starting hierarchical clustering analysis...")
     print(f"Linkage method: {linkage_method}")
     print(f"Transparent cells: {transparent_bg}")
     print(f"Reverse channels: {reverse_channels}")
@@ -922,15 +1049,21 @@ def hierarchical_clustering_analysis(
     print(f"Loaded {n_somas} somas with {n_channels} channels")
 
     # Perform hierarchical clustering
-    cluster_order, clustered_barcodes = create_hierarchical_clustering(
+    cluster_order, clustered_barcodes, Z = create_hierarchical_clustering(
         soma_barcodes, method=linkage_method
     )
+
+    silhouette_summary = silhouette_summary_from_linkage(
+        soma_barcodes, Z, k_range=range(2, 11), metric="hamming"
+    )
+
+    print(f"Silhouette summary: {silhouette_summary}")
 
     # Get segment IDs and reorder according to clustering
     soma_seg_ids = pd.read_csv("./soma_barcode_info.csv")["segment_id"].tolist()
     clustered_segment_ids = [soma_seg_ids[i] for i in cluster_order]
 
-    print(f"Clustering completed. Highlighted segments:")
+    print("Clustering completed. Highlighted segments:")
     for highlight_seg in highlights:
         if highlight_seg in clustered_segment_ids:
             pos = clustered_segment_ids.index(highlight_seg)
@@ -1080,6 +1213,7 @@ def hierarchical_clustering_analysis(
         clustered_segment_ids,
         linkage_method,
         HIERARCHICAL_OUTPUT_DIR,
+        silhouette_summary,
     )
     output_files.update(heatmap_outputs)
 
@@ -1092,10 +1226,11 @@ def hierarchical_clustering_analysis(
         "n_somas": n_somas,
         "n_channels": n_channels,
         "highlights": highlights,
+        "silhouette_summary": silhouette_summary,
         "output_files": output_files,
     }
 
-    print(f"\nHierarchical clustering analysis completed successfully!")
+    print("\nHierarchical clustering analysis completed successfully!")
     print(f"Output directory: {HIERARCHICAL_OUTPUT_DIR}")
     print(f"Generated heatmap variants: {list(heatmap_outputs.keys())}")
 
@@ -1148,7 +1283,7 @@ def create_custom_clustered_heatmap(
 
     # Get data and perform clustering
     soma_barcodes = generate_barcode_array()
-    cluster_order, clustered_barcodes = create_hierarchical_clustering(
+    cluster_order, clustered_barcodes, _ = create_hierarchical_clustering(
         soma_barcodes, method=linkage_method
     )
     soma_seg_ids = pd.read_csv("./soma_barcode_info.csv")["segment_id"].tolist()
@@ -1224,7 +1359,7 @@ def main():
     )
 
     # Print summary
-    print(f"\n=== ANALYSIS SUMMARY ===")
+    print("\n=== ANALYSIS SUMMARY ===")
     print(f"Linkage method: {results['linkage_method']}")
     print(f"Total somas: {results['n_somas']}")
     print(f"Channels: {results['n_channels']}")

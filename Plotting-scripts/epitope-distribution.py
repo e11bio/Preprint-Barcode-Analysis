@@ -25,57 +25,58 @@ def create_epitope_plot(soma_barcodes, settings):
     # Calculate epitope statistics
     epitope_counts = np.sum(soma_barcodes, axis=0)
     total_cells = len(soma_barcodes)
-    epitope_percentages = (epitope_counts / total_cells) * 100
-    mean_percentage = np.mean(epitope_percentages)
-    median_percentage = np.median(epitope_percentages)
+    epitope_proportions = epitope_counts / total_cells  # Keep as proportions (0-1)
+    mean_proportion = np.mean(epitope_proportions)
+    median_proportion = np.median(epitope_proportions)
 
     # Create DataFrame with simplified epitope names
     simplified_epitopes = [name.split("-")[0] for name in target_channels]
     epitope_df = pd.DataFrame(
-        {"Epitope": simplified_epitopes, "Percentage": epitope_percentages}
+        {"Epitope": simplified_epitopes, "Proportion": epitope_proportions}
     )
 
-    # Sort from lowest to highest percentage for better visualization
-    epitope_df = epitope_df.sort_values("Percentage", ascending=True)
+    # Sort from lowest to highest proportion for better visualization
+    epitope_df = epitope_df.sort_values("Proportion", ascending=True)
 
-    # Create the plot
-    plt.figure(figsize=settings["histogram_epitope_dist"], dpi=DPI)
-    sns.set_style("ticks")
-    plt.rcParams.update(
-        {
-            "font.size": settings["tick_size"],
-            "axes.labelsize": settings["label_size"],
-            "axes.titlesize": settings["title_size"],
-            "xtick.labelsize": settings["tick_size"],
-            "ytick.labelsize": settings["tick_size"],
-            "legend.fontsize": settings["legend_size"],
-        }
-    )
+    # Create the plot (apply_style() already called in main, so just create figure)
+    fig, ax = plt.subplots(figsize=settings["histogram_epitope_dist"], dpi=DPI)
 
     # Create barplot
     bars = sns.barplot(
         x="Epitope",
-        y="Percentage",
+        y="Proportion",
         data=epitope_df,
         color=settings["main_color"],
         fill=True,
+        ax=ax,
     )
 
     # Configure plot appearance
-    ax = plt.gca()
     ax.grid(False)
     ax.title.set_color("black")
     ax.xaxis.label.set_color("black")
     ax.yaxis.label.set_color("black")
-    ax.xaxis.label.set_visible(False)
-    ax.yaxis.label.set_visible(False)
+
+    # Set axis labels
+    ax.set_xlabel(
+        "Protein bit",
+        fontsize=settings["label_size"],
+        fontfamily=settings["font_family"],
+        # labelpad=4,  # Reduced padding
+    )
+    ax.set_ylabel(
+        "Proportion of somas",
+        fontsize=settings["label_size"],
+        fontfamily=settings["font_family"],
+    )
 
     sns.despine()
+    # Rotate x-axis labels to 90 degrees
     plt.xticks(rotation=90, ha="center")  # Font size handled by rcParams
 
     # Add mean line
     plt.axhline(
-        y=mean_percentage,
+        y=mean_proportion,
         color="grey",
         linestyle="--",
         alpha=0.5,
@@ -98,18 +99,20 @@ def create_epitope_plot(soma_barcodes, settings):
                 x_pos += 0.8
 
             bars.annotate(
-                f"{p.get_height():.1f}%",
+                f"{p.get_height():.2f}",
                 (x_pos, p.get_height()),
                 ha="center",
                 va="bottom",
                 fontsize=settings["tick_size"],  # Use tick size for annotations
             )
 
-    # Set y-axis limits and adjust layout
-    plt.ylim(0, 50)
-    plt.tight_layout()
+    # Set y-axis limits
+    plt.ylim(0, 0.5)
 
-    return bars.figure, epitope_df, mean_percentage, median_percentage
+    # Adjust layout with specific padding to preserve font sizes
+    plt.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.4)
+
+    return fig, epitope_df, mean_proportion, median_proportion
 
 
 if __name__ == "__main__":
@@ -141,7 +144,7 @@ if __name__ == "__main__":
 
     # Generate data and create plot
     soma_barcodes = generate_barcode_array()
-    fig, epitope_df, mean_percentage, median_percentage = create_epitope_plot(
+    fig, epitope_df, mean_proportion, median_proportion = create_epitope_plot(
         soma_barcodes, settings
     )
 
@@ -163,13 +166,13 @@ This plot shows the distribution of epitopes across {len(soma_barcodes)} somas i
 
 ## Details
 - **Total somas analyzed**: {len(soma_barcodes)}
-- **Highest epitope presence**: {epitope_df["Percentage"].max():.1f}%
-- **Lowest epitope presence**: {epitope_df["Percentage"].min():.1f}%
-- **Mean epitope presence**: {mean_percentage:.1f}%
-- **Median epitope presence**: {median_percentage:.1f}%
-- **Standard deviation of epitope presence**: {np.std(epitope_df["Percentage"]):.1f}%
+- **Highest epitope presence**: {epitope_df["Proportion"].max():.3f}
+- **Lowest epitope presence**: {epitope_df["Proportion"].min():.3f}
+- **Mean epitope presence**: {mean_proportion:.3f}
+- **Median epitope presence**: {median_proportion:.3f}
+- **Standard deviation of epitope presence**: {np.std(epitope_df["Proportion"]):.3f}
 
-The histogram showcases the distribution of each epitope of the barcode, indicating the percentage of cells containing each epitope.
+The histogram showcases the distribution of each epitope of the barcode, indicating the proportion of cells containing each epitope.
 
 The values for each epitope are as follows:
 {epitope_df.to_markdown()}

@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from soma_preprocessing import generate_barcode_array
-
 # Import plotting settings
 from plot_settings import (
     DPI,
@@ -17,6 +15,8 @@ from plot_settings import (
     get_script_output_dir,
     set_plot_style,
 )
+from soma_preprocessing import generate_barcode_array
+
 # Import functions from soma-preprocessing.py
 
 # soma_barcodes array, this is what is used for downstream plot analysis
@@ -30,6 +30,7 @@ def configure_barcode_plot(settings):
     sns.set_style("ticks")
     plt.rcParams.update(
         {
+            "font.family": settings["font_family"],
             "font.size": settings["tick_size"],
             "axes.labelsize": settings["label_size"],
             "axes.titlesize": settings["title_size"],
@@ -40,11 +41,18 @@ def configure_barcode_plot(settings):
 
 
 def create_barcode_length_plot(barcode_lengths, settings):
-    """Create histogram plot of barcode lengths"""
+    """Create histogram plot of barcode lengths as proportions"""
     fig, ax = plt.subplots(figsize=settings["histogram_barcode_lengths"], dpi=DPI)
 
-    # Create histogram
-    sns.histplot(barcode_lengths, kde=False, bins=range(19), discrete=True, ax=ax)
+    # Create histogram with proportions (stat="proportion")
+    sns.histplot(
+        barcode_lengths,
+        kde=False,
+        bins=range(19),
+        discrete=True,
+        ax=ax,
+        stat="proportion",
+    )
 
     # Style the bars
     for patch in ax.patches:
@@ -53,8 +61,18 @@ def create_barcode_length_plot(barcode_lengths, settings):
 
     # Configure plot appearance
     ax.grid(False)
-    ax.xaxis.label.set_visible(False)
-    ax.yaxis.label.set_visible(False)
+
+    # Set axis labels
+    ax.set_xlabel(
+        "# observed protein bits",
+        fontsize=settings["label_size"],
+        fontfamily=settings["font_family"],
+    )
+    ax.set_ylabel(
+        "Proportion of somas",
+        fontsize=settings["label_size"],
+        fontfamily=settings["font_family"],
+    )
 
     # Set x-axis ticks
     plt.xticks(range(1, 19, 2))
@@ -68,6 +86,10 @@ def create_barcode_length_plot(barcode_lengths, settings):
 
 def calculate_statistics(barcode_lengths):
     """Calculate summary statistics for barcode lengths"""
+    # Count cells with exactly one barcode
+    cells_with_one_barcode = np.sum(barcode_lengths == 1)
+    proportion_with_one = cells_with_one_barcode / len(barcode_lengths)
+
     return {
         "total_cells": len(barcode_lengths),
         "mean_length": np.mean(barcode_lengths),
@@ -75,6 +97,8 @@ def calculate_statistics(barcode_lengths):
         "min_length": np.min(barcode_lengths),
         "max_length": np.max(barcode_lengths),
         "std_length": np.std(barcode_lengths),
+        "cells_with_one_barcode": cells_with_one_barcode,
+        "proportion_with_one": proportion_with_one,
     }
 
 
@@ -106,6 +130,7 @@ Distribution of barcode lengths (Hamming weights) across {stats["total_cells"]} 
 - **Minimum barcode length**: {stats["min_length"]}
 - **Maximum barcode length**: {stats["max_length"]}
 - **Standard deviation**: {stats["std_length"]:.2f}
+- **Cells with exactly one barcode**: {stats["cells_with_one_barcode"]} ({stats["proportion_with_one"]:.1%})
 
 ## Methodology
 The barcode length for each cell was calculated by summing the number of positive markers (1s) in each cell's barcode array. The distribution was visualized using a histogram with discrete bins for each possible barcode length (0-18).
@@ -167,6 +192,9 @@ if __name__ == "__main__":
     print("Barcode length analysis complete!")
     print(f"Total cells: {stats['total_cells']}")
     print(f"Mean barcode length: {stats['mean_length']:.2f}")
+    print(
+        f"Cells with exactly one barcode: {stats['cells_with_one_barcode']} ({stats['proportion_with_one']:.1%})"
+    )
     print("Files saved:")
     print(f"  - {plot_file}")
     print(f"  - {doc_file}")
