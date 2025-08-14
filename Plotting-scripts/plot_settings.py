@@ -1,7 +1,7 @@
+import os
 from enum import Enum, auto
 
 import matplotlib.pyplot as plt
-import os
 import seaborn as sns
 
 
@@ -48,7 +48,7 @@ POSTER_SIZES = {
     "FIG_WIDTH": 4.5,  # 1.5x paper width
     "FIG_HEIGHT": 3,  # 1.5x paper height
     "HISTOGRAM_BARCODE_LENGTHS": (
-        4,
+        5,
         4,
     ),  # Taller aspect ratio for better poster visibility
     "HISTOGRAM_EPITOPE_DIST": (
@@ -57,7 +57,7 @@ POSTER_SIZES = {
     ),  # Taller aspect ratio for better poster visibility
     "HISTOGRAM_COLLISIONS": (2, 4),  # Taller aspect ratio for better poster visibility
     "HISTOGRAM_HAMMING_DISTANCE": (6, 4),  # Wider for distance distribution
-    "HISTOGRAM_COLLISION_CATEGORIES": (3, 4),  # Narrower for binary categories
+    "HISTOGRAM_COLLISION_CATEGORIES": (2, 4),  # Narrower for binary categories
     "HEATMAP": (1, 3.3),
 }
 

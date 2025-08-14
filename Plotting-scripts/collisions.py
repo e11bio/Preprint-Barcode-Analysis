@@ -125,7 +125,7 @@ def create_collision_plot(collision_counts, settings):
         bar.set_edgecolor("white")
 
     # Add value annotations
-    for x, y in zip(x_vals, y_vals):
+    for x, y in zip(x_vals, y_vals):  # noqa: B905
         ax.text(x, y, str(y), ha="center", va="bottom", fontsize=settings["tick_size"])
 
     ax.set_xticks(x_vals)
@@ -263,7 +263,7 @@ def save_plots_and_docs(
             "plot": plots["collision_categories"],
             "title": None,  # No title for this plot
             "xlabel": None,  # Categories are self-explanatory
-            "ylabel": "Proportion of somas",
+            "ylabel": "Fraction of somas",
         },
         "min_distances": {
             "plot": plots["min_distances"],
@@ -281,7 +281,7 @@ def save_plots_and_docs(
             "plot": plots["all_distances"],
             "title": None,
             "xlabel": "Hamming distance",
-            "ylabel": "Proportion of pairwise\ndistances",
+            "ylabel": "Fraction of pairwise\ndistances",
         },
     }
 

@@ -69,7 +69,7 @@ def create_barcode_length_plot(barcode_lengths, settings):
         fontfamily=settings["font_family"],
     )
     ax.set_ylabel(
-        "Proportion of somas",
+        "Fraction of somas",
         fontsize=settings["label_size"],
         fontfamily=settings["font_family"],
     )

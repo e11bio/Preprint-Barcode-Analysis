@@ -19,6 +19,28 @@ from plot_settings import (
 # Import functions from soma-preprocessing.py
 from soma_preprocessing import generate_barcode_array, target_channels
 
+# Custom mapping for epitope names
+EPITOPE_NAMES = {
+    "E2-barcode-R1": "E2",
+    "S1-barcode-R1": "S1",
+    "ALFA-barcode-R1": "ALFA",
+    "Ty1-barcode-R2": "Ty1",
+    "HA-barcode-R3": "HA",
+    "T7-barcode-R6": "T7",
+    "VSVG-barcode-R6": "VSVG",
+    "AU5-barcode-R8": "AU5",
+    "NWS-barcode-R9": "NWS",
+    "SunTag-barcode-R9": "SUN",
+    "ETAG-barcode-R9": "ETAG",
+    "SPOT-barcode-R10": "SPOT",
+    "MoonTag-barcode-R10": "MOON",
+    "HSV Tag-barcode-R10": "HSV",
+    "Protein C-barcode-R11": "PRTC",
+    "Tag100-barcode-R11": "TG100",
+    "CMyc-barcode-R11": "MYC",
+    "OLLAS-barcode-R12": "OLLAS",
+}
+
 
 def create_epitope_plot(soma_barcodes, settings):
     """Create epitope distribution plot"""
@@ -29,10 +51,10 @@ def create_epitope_plot(soma_barcodes, settings):
     mean_proportion = np.mean(epitope_proportions)
     median_proportion = np.median(epitope_proportions)
 
-    # Create DataFrame with simplified epitope names
-    simplified_epitopes = [name.split("-")[0] for name in target_channels]
+    # Create DataFrame with custom epitope names
+    custom_epitopes = [EPITOPE_NAMES[name] for name in target_channels]
     epitope_df = pd.DataFrame(
-        {"Epitope": simplified_epitopes, "Proportion": epitope_proportions}
+        {"Epitope": custom_epitopes, "Proportion": epitope_proportions}
     )
 
     # Sort from lowest to highest proportion for better visualization
@@ -65,7 +87,7 @@ def create_epitope_plot(soma_barcodes, settings):
         # labelpad=4,  # Reduced padding
     )
     ax.set_ylabel(
-        "Proportion of somas",
+        "Fraction of somas",
         fontsize=settings["label_size"],
         fontfamily=settings["font_family"],
     )
