@@ -53,6 +53,10 @@ def configure_plot_style(settings):
             "xtick.labelsize": settings["tick_size"],
             "ytick.labelsize": settings["tick_size"],
             "legend.fontsize": settings["tick_size"],
+            "text.color": "black",
+            "axes.labelcolor": "black",
+            "xtick.color": "black",
+            "ytick.color": "black",
         }
     )
 
@@ -126,7 +130,15 @@ def create_collision_plot(collision_counts, settings):
 
     # Add value annotations
     for x, y in zip(x_vals, y_vals):  # noqa: B905
-        ax.text(x, y, str(y), ha="center", va="bottom", fontsize=settings["tick_size"])
+        ax.text(
+            x,
+            y,
+            str(y),
+            ha="center",
+            va="bottom",
+            fontsize=settings["tick_size"],
+            color="black",
+        )
 
     ax.set_xticks(x_vals)
     ax.set_xlabel("# of cells\nsharing barcode")
@@ -203,7 +215,7 @@ def create_distance_plots(distance_matrix, min_distances, settings, soma_barcode
         patch.set_hatch("//////")  # Denser diagonal lines for single bit
 
     ax.set_xticks(np.arange(int(min_dist), int(max_dist) + 1))
-    ax.legend(frameon=False)
+    ax.legend(frameon=False, labelcolor="black")
 
     # Font sizes handled by rcParams
     plots["min_distances"] = fig
@@ -296,7 +308,7 @@ def save_plots_and_docs(
             ylabel=config["ylabel"],
         )
         filename = get_output_filename(
-            name, settings["style"], "png", script_name="collisions"
+            name, settings["style"], "pdf", script_name="collisions"
         )
         config["plot"].savefig(filename, dpi=DPI, bbox_inches="tight")
         saved_files.append(filename)
@@ -367,11 +379,11 @@ Analysis of barcode collisions and distance metrics for ground truth somas.
 - **Standard deviation**: {std_distance:.2f}
 
 ## Generated Plots
-- Collision histogram: `collisions.png`
-- Collision categories: `collision_categories.png`
-- Minimum distances: `min_distances.png`  
-- Average distances: `average_distances.png`
-- All distances: `all_distances.png`
+- Collision histogram: `collisions.pdf`
+- Collision categories: `collision_categories.pdf`
+- Minimum distances: `min_distances.pdf`  
+- Average distances: `average_distances.pdf`
+- All distances: `all_distances.pdf`
 
 ## Methodology
 - **Distance Metric**: Hamming distance between binary barcode patterns

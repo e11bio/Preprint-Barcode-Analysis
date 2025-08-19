@@ -35,11 +35,11 @@ def get_script_output_dir(script_name: str) -> str:
 PAPER_SIZES = {
     "FIG_WIDTH": 3,  # inches = 152 mm
     "FIG_HEIGHT": 2,  # inches = 102 mm
-    "HISTOGRAM_BARCODE_LENGTHS": (1.8, 1.9),
+    "HISTOGRAM_BARCODE_LENGTHS": (2.2, 1.9),
     "HISTOGRAM_EPITOPE_DIST": (2.8, 1.9),
     "HISTOGRAM_COLLISIONS": (1.4, 1.8),  #
     "HISTOGRAM_HAMMING_DISTANCE": (2, 1.8),  # Wider for distance distribution
-    "HISTOGRAM_COLLISION_CATEGORIES": (1.3, 1.6),  # important one
+    "HISTOGRAM_COLLISION_CATEGORIES": (1.1, 1.6),  # important one
     "HEATMAP": (1.2, 4),
 }
 
@@ -164,6 +164,8 @@ def apply_style(settings):
             "legend.frameon": True,
             "legend.framealpha": 0.8,
             "legend.edgecolor": "black",
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
         }
     )
 

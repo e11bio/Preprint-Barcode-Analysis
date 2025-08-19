@@ -1081,7 +1081,7 @@ def hierarchical_clustering_analysis(
     labels_path = get_output_filename(
         "hierarchical_clustering_with_labels",
         settings["style"],
-        "png",
+        "pdf",
         script_name="hierarchical-clustering",
     )
     plot_clustered_heatmap(
@@ -1103,7 +1103,7 @@ def hierarchical_clustering_analysis(
     clean_path = get_output_filename(
         "hierarchical_clustering_clean",
         settings["style"],
-        "png",
+        "pdf",
         script_name="hierarchical-clustering",
     )
     plot_clustered_heatmap(
@@ -1125,7 +1125,7 @@ def hierarchical_clustering_analysis(
     simple_path = get_output_filename(
         "hierarchical_clustering_simple",
         settings["style"],
-        "png",
+        "pdf",
         script_name="hierarchical-clustering",
     )
     plot_clustered_heatmap_simple(
@@ -1143,7 +1143,7 @@ def hierarchical_clustering_analysis(
     inverted_labels_path = get_output_filename(
         "hierarchical_clustering_with_labels_inverted",
         settings["style"],
-        "png",
+        "pdf",
         script_name="hierarchical-clustering",
     )
     plot_clustered_heatmap_inverted(
@@ -1165,7 +1165,7 @@ def hierarchical_clustering_analysis(
     inverted_clean_path = get_output_filename(
         "hierarchical_clustering_clean_inverted",
         settings["style"],
-        "png",
+        "pdf",
         script_name="hierarchical-clustering",
     )
     plot_clustered_heatmap_inverted(
@@ -1187,7 +1187,7 @@ def hierarchical_clustering_analysis(
     inverted_simple_path = get_output_filename(
         "hierarchical_clustering_simple_inverted",
         settings["style"],
-        "png",
+        "pdf",
         script_name="hierarchical-clustering",
     )
     plot_clustered_heatmap_inverted(
@@ -1293,7 +1293,7 @@ def create_custom_clustered_heatmap(
     transparent_suffix = "_transparent" if transparent_bg else ""
     output_path = os.path.join(
         HIERARCHICAL_OUTPUT_DIR,
-        f"hierarchical_clustering_{output_name}{transparent_suffix}.png",
+        f"hierarchical_clustering_{output_name}{transparent_suffix}.pdf",
     )
 
     # Create heatmap

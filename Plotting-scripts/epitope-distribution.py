@@ -174,7 +174,7 @@ if __name__ == "__main__":
     plot_filename = get_output_filename(
         "epitope_distribution",
         settings["style"],
-        "png",
+        "pdf",
         script_name="epitope-distribution",
     )
     fig.savefig(plot_filename, dpi=500)
@@ -199,7 +199,7 @@ The histogram showcases the distribution of each epitope of the barcode, indicat
 The values for each epitope are as follows:
 {epitope_df.to_markdown()}
 
-![Epitope Distribution](epitope_distribution.png)
+![Epitope Distribution](epitope_distribution.pdf)
 """
 
     md_filename = os.path.join(output_dir, "epitope_distribution.md")

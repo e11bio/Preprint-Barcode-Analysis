@@ -108,7 +108,7 @@ def save_plot_and_docs(fig, barcode_lengths, output_dir, settings):
     plot_filename = get_output_filename(
         "barcode_length_distribution",
         settings["style"],
-        "png",
+        "pdf",
         script_name="barcode-length",
     )
     fig.savefig(plot_filename, dpi=500, bbox_inches="tight")
@@ -136,9 +136,9 @@ Distribution of barcode lengths (Hamming weights) across {stats["total_cells"]} 
 The barcode length for each cell was calculated by summing the number of positive markers (1s) in each cell's barcode array. The distribution was visualized using a histogram with discrete bins for each possible barcode length (0-18).
 
 ## Generated Files
-- Plot: `barcode_length_distribution.png`
+- Plot: `barcode_length_distribution.pdf`
 
-![Barcode Length Distribution](barcode_length_distribution.png)
+![Barcode Length Distribution](barcode_length_distribution.pdf)
 """
 
     md_filename = os.path.join(output_dir, "barcode_length_distribution.md")
