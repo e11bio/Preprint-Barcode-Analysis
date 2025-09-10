@@ -42,6 +42,40 @@ EPITOPE_NAMES = {
 }
 
 
+def save_channel_statistics(epitope_df, total_cells):
+    """Save channel statistics to JSON file.
+
+    Args:
+        epitope_df: DataFrame containing epitope proportions
+        total_cells: Total number of cells analyzed
+    """
+    import json
+    from pathlib import Path
+
+    # Create output directory if it doesn't exist
+    output_dir = Path("../analysis_output")
+    output_dir.mkdir(exist_ok=True)
+
+    # Create statistics dictionary
+    channel_stats = {
+        "channel_names": epitope_df["Epitope"].tolist(),
+        "percentages": {
+            name: float(proportion)
+            for name, proportion in zip(epitope_df["Epitope"], epitope_df["Proportion"])
+        },
+        "total_cells": int(total_cells),
+        "mean_expressions_per_object": float(epitope_df["Proportion"].mean()),
+        "median_expressions_per_object": float(epitope_df["Proportion"].median()),
+    }
+
+    # Save to JSON
+    output_file = output_dir / "channel_statistics_raw.json"
+    with open(output_file, "w") as f:
+        json.dump(channel_stats, f, indent=2)
+
+    print(f"\nChannel statistics saved to: {output_file}")
+
+
 def create_epitope_plot(soma_barcodes, settings):
     """Create epitope distribution plot"""
     # Calculate epitope statistics
@@ -179,6 +213,9 @@ if __name__ == "__main__":
     )
     fig.savefig(plot_filename, dpi=500)
     plt.close(fig)
+
+    # Save channel statistics
+    save_channel_statistics(epitope_df, len(soma_barcodes))
 
     # Create markdown documentation
     md_content = f"""# Epitope Distribution Analysis

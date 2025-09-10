@@ -40,6 +40,8 @@ PAPER_SIZES = {
     "HISTOGRAM_COLLISIONS": (1.4, 1.8),  #
     "HISTOGRAM_HAMMING_DISTANCE": (2, 1.8),  # Wider for distance distribution
     "HISTOGRAM_COLLISION_CATEGORIES": (1.1, 1.6),  # important one
+    "MONTE_CARLO": (2, 2),
+    "SAMPLING_PLOT": (3, 2),
     "HEATMAP": (1.2, 4),
 }
 
@@ -58,8 +60,11 @@ POSTER_SIZES = {
     "HISTOGRAM_COLLISIONS": (2, 4),  # Taller aspect ratio for better poster visibility
     "HISTOGRAM_HAMMING_DISTANCE": (6, 4),  # Wider for distance distribution
     "HISTOGRAM_COLLISION_CATEGORIES": (2, 4),  # Narrower for binary categories
+    "MONTE_CARLO": (2, 2),
+    "SAMPLING_PLOT": (4.5, 3),
     "HEATMAP": (1, 3.3),
 }
+
 
 # Colors
 MAIN_COLOR = "gray"  # Silver
@@ -115,7 +120,9 @@ def set_plot_style(style: PlotStyle = PlotStyle.PAPER, font_size: int = None):
         "histogram_collisions": sizes["HISTOGRAM_COLLISIONS"],
         "histogram_hamming_distance": sizes["HISTOGRAM_HAMMING_DISTANCE"],
         "histogram_collision_categories": sizes["HISTOGRAM_COLLISION_CATEGORIES"],
+        "monte_carlo": sizes["MONTE_CARLO"],
         "heatmap": sizes["HEATMAP"],
+        "sampling_plot": sizes["SAMPLING_PLOT"],
         "title_size": font_sizes["TITLE"],
         "label_size": font_sizes["LABEL"],
         "tick_size": font_sizes["TICK"],

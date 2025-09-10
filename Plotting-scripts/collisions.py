@@ -228,7 +228,7 @@ def create_distance_plots(distance_matrix, min_distances, settings, soma_barcode
     fig, ax = plt.subplots(figsize=settings["histogram_collisions"])
 
     # Calculate appropriate bins
-    min_dist = np.floor(np.min(average_distances))
+    min_dist = np.floor(np.min(average_distances) - 1)
     max_dist = np.ceil(np.max(average_distances))
     n_bins = int(max_dist - min_dist + 1)  # One bin per integer distance
     bins = np.linspace(min_dist, max_dist, n_bins + 1)

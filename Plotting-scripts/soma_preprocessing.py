@@ -1,21 +1,9 @@
 # This file will contains functions to preprocess SOMA data
 
-import zarr  # open files
-import sklearn.metrics as sn
-from sklearn.decomposition import PCA
-import scipy.stats as stats
+
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from scipy.spatial import distance
-
-import math
-import os
-import textwrap
-from adjustText import adjust_text
-from itertools import combinations
-import datetime
+import zarr  # open files
 
 channel_targets = {
     "ch_0": "E2-barcode-R1",
@@ -115,6 +103,9 @@ def filter_somas(df, csv_path):
     # 1. Load the CSV file with soma information
     somas_csv = pd.read_csv(csv_path)
 
+    # 0. filter out somas with all zeros
+    somas_csv = somas_csv[somas_csv["barcode_length"] != 0]
+
     # 2. Filter out somas with segment ID of x: here we are not filtering anything out.
     id_column = "segment_id"
     valid_somas = somas_csv[
@@ -139,13 +130,13 @@ def filter_somas(df, csv_path):
     processed_df_filtered = processed_df_filtered.rename(columns=rename_mapping)
 
     # Define the non-channel columns you want to keep
-    non_channel_columns = ["coords", "score", "is_cell", "z", "y", "x"]
+    # non_channel_columns = ["coords", "score", "is_cell", "z", "y", "x"]
 
     # Combine non-channel columns with target channels to create the list of columns to keep
-    columns_to_keep = non_channel_columns + target_channels
+    # columns_to_keep = non_channel_columns + target_channels
 
     # Filter the DataFrame to include only the specified columns
-    filtered_df = processed_df_filtered[columns_to_keep]
+    # filtered_df = processed_df_filtered[columns_to_keep]
 
     return processed_df_filtered
 
