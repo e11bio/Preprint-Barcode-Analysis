@@ -61,7 +61,7 @@ def save_channel_statistics(epitope_df, total_cells):
         "channel_names": epitope_df["Epitope"].tolist(),
         "percentages": {
             name: float(proportion)
-            for name, proportion in zip(epitope_df["Epitope"], epitope_df["Proportion"])
+            for name, proportion in zip(epitope_df["Epitope"], epitope_df["Proportion"])  # noqa: B905
         },
         "total_cells": int(total_cells),
         "mean_expressions_per_object": float(epitope_df["Proportion"].mean()),
@@ -85,8 +85,16 @@ def create_epitope_plot(soma_barcodes, settings):
     mean_proportion = np.mean(epitope_proportions)
     median_proportion = np.median(epitope_proportions)
 
-    # Create DataFrame with custom epitope names
-    custom_epitopes = [EPITOPE_NAMES[name] for name in target_channels]
+    # Create DataFrame with custom epitope names based on style
+    if settings["style"] == PlotStyle.POSTER:
+        # For poster mode, use "Bit [number]" format based on order in target_channels
+        custom_epitopes = [f"Bit {i + 1}" for i in range(len(target_channels))]
+        align_label = "right"
+    else:
+        # For paper mode, use the custom epitope names
+        custom_epitopes = [EPITOPE_NAMES[name] for name in target_channels]
+        align_label = "left"
+
     epitope_df = pd.DataFrame(
         {"Epitope": custom_epitopes, "Proportion": epitope_proportions}
     )
@@ -118,6 +126,7 @@ def create_epitope_plot(soma_barcodes, settings):
         "Protein bit",
         fontsize=settings["label_size"],
         fontfamily=settings["font_family"],
+        ha=align_label,
         # labelpad=4,  # Reduced padding
     )
     ax.set_ylabel(
@@ -218,6 +227,7 @@ if __name__ == "__main__":
     save_channel_statistics(epitope_df, len(soma_barcodes))
 
     # Create markdown documentation
+    epitope_label = "bit" if settings["style"] == PlotStyle.POSTER else "epitope"
     md_content = f"""# Epitope Distribution Analysis
 
 ## Overview
@@ -225,15 +235,15 @@ This plot shows the distribution of epitopes across {len(soma_barcodes)} somas i
 
 ## Details
 - **Total somas analyzed**: {len(soma_barcodes)}
-- **Highest epitope presence**: {epitope_df["Proportion"].max():.3f}
-- **Lowest epitope presence**: {epitope_df["Proportion"].min():.3f}
-- **Mean epitope presence**: {mean_proportion:.3f}
-- **Median epitope presence**: {median_proportion:.3f}
-- **Standard deviation of epitope presence**: {np.std(epitope_df["Proportion"]):.3f}
+- **Highest {epitope_label} presence**: {epitope_df["Proportion"].max():.3f}
+- **Lowest {epitope_label} presence**: {epitope_df["Proportion"].min():.3f}
+- **Mean {epitope_label} presence**: {mean_proportion:.3f}
+- **Median {epitope_label} presence**: {median_proportion:.3f}
+- **Standard deviation of {epitope_label} presence**: {np.std(epitope_df["Proportion"]):.3f}
 
-The histogram showcases the distribution of each epitope of the barcode, indicating the proportion of cells containing each epitope.
+The histogram showcases the distribution of each {epitope_label} of the barcode, indicating the proportion of cells containing each {epitope_label}.
 
-The values for each epitope are as follows:
+The values for each {epitope_label} are as follows:
 {epitope_df.to_markdown()}
 
 ![Epitope Distribution](epitope_distribution.pdf)

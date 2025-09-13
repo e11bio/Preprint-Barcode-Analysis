@@ -11,24 +11,22 @@ Author: Generated for barcode analysis
 Date: 2024
 """
 
+import os
+from typing import Any, Dict, List, Optional, Tuple
+
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import seaborn as sns
-import os
-from datetime import datetime
-from typing import List, Tuple, Optional, Dict, Any
 from matplotlib.colors import ListedColormap
-
 from plot_settings import (
-    FIG_SIZE_HEATMAP,
-    set_style,
     DPI,
-    OUTPUT_DIR,
-    FONT_FAMILY,
+    PlotStyle,
+    apply_style,
+    get_script_output_dir,
+    set_plot_style,
 )
-
 from soma_preprocessing import generate_barcode_array_with_coordinates
 
 # Configuration
@@ -37,8 +35,7 @@ DEFAULT_XY_MARGIN = 50.0  # Default margin in micrometers for x and y
 DEFAULT_Z_MARGIN = 10.0  # Default margin in micrometers for z
 
 # Create specific output directory for spatial filter analysis
-SPATIAL_FILTER_OUTPUT_DIR = os.path.join(OUTPUT_DIR, "spatial_filter_somas")
-os.makedirs(SPATIAL_FILTER_OUTPUT_DIR, exist_ok=True)
+SPATIAL_FILTER_OUTPUT_DIR = get_script_output_dir("spatial_filter_somas")
 
 
 def get_segment_coordinates(
@@ -229,7 +226,10 @@ def plot_filtered_heatmap(
         The created figure
     """
     n_somas, n_channels = barcodes.shape
-    set_style()
+
+    # Get plot settings - use paper style by default
+    settings = set_plot_style(PlotStyle.PAPER)
+    apply_style(settings)
 
     # Determine figure size
     if figsize is not None:
@@ -301,17 +301,30 @@ def plot_filtered_heatmap(
 
     # Customize appearance
     if show_labels:
-        ax.set_xlabel(f"Channels (n={n_channels})", fontsize=10, fontfamily=FONT_FAMILY)
-        ax.set_ylabel(f"Somas (n={n_somas})", fontsize=10, fontfamily=FONT_FAMILY)
+        ax.set_xlabel(
+            f"Channels (n={n_channels})",
+            fontsize=settings["label_size"],
+            fontfamily=settings["font_family"],
+        )
+        ax.set_ylabel(
+            f"Somas (n={n_somas})",
+            fontsize=settings["label_size"],
+            fontfamily=settings["font_family"],
+        )
         ax.set_title(
             f"Spatial Filter Analysis{title_suffix}",
-            fontsize=12,
-            fontfamily=FONT_FAMILY,
+            fontsize=settings["title_size"],
+            fontfamily=settings["font_family"],
         )
 
         # Rotate x-axis labels
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", fontsize=8)
-        plt.setp(ax.get_yticklabels(), rotation=0, fontsize=8)
+        plt.setp(
+            ax.get_xticklabels(),
+            rotation=45,
+            ha="right",
+            fontsize=settings["tick_size"],
+        )
+        plt.setp(ax.get_yticklabels(), rotation=0, fontsize=settings["tick_size"])
     else:
         # Remove all labels and ticks
         ax.set_xlabel("")
@@ -367,7 +380,6 @@ def save_analysis_results(
     filtered_segment_ids: List[int],
     target_segments: List[int],
     output_dir: str,
-    date_str: str,
     shuffle_suffix: str = "",
     shuffle_somas: bool = False,
     random_seed: Optional[int] = None,
@@ -387,8 +399,6 @@ def save_analysis_results(
         Original target segment IDs
     output_dir : str
         Directory to save files
-    date_str : str
-        Date string for file naming
     shuffle_suffix : str, optional
         Suffix indicating if shuffling was applied
     shuffle_somas : bool, optional
@@ -423,7 +433,7 @@ def save_analysis_results(
         bbox_info["random_seed"] = random_seed
 
     bbox_path = os.path.join(
-        output_dir, f"spatial_filter_bbox_info{shuffle_suffix}_{date_str}.txt"
+        output_dir, f"spatial_filter_bbox_info{shuffle_suffix}.txt"
     )
     with open(bbox_path, "w") as f:
         for key, value in bbox_info.items():
@@ -444,7 +454,7 @@ def save_analysis_results(
     )
 
     coords_path = os.path.join(
-        output_dir, f"spatial_filter_coordinates{shuffle_suffix}_{date_str}.csv"
+        output_dir, f"spatial_filter_coordinates{shuffle_suffix}.csv"
     )
     coords_df.to_csv(coords_path, index=False)
     output_files["coordinates"] = coords_path
@@ -566,7 +576,6 @@ def spatial_filter_analysis(
         print(f"Shuffled {n_filtered} somas (random_seed: {random_seed})")
 
     # Generate outputs
-    date_str = datetime.now().strftime("%y%m%d")
     suffix = f"_{output_suffix}" if output_suffix else ""
     shuffle_suffix = "_shuffled" if shuffle_somas else ""
     title_suffix = f" (n={len(filtered_segment_ids)})"
@@ -577,7 +586,7 @@ def spatial_filter_analysis(
     # 1. Standard heatmap with labels and highlights
     heatmap_path = os.path.join(
         SPATIAL_FILTER_OUTPUT_DIR,
-        f"spatial_filter_heatmap{suffix}{shuffle_suffix}_{date_str}.png",
+        f"spatial_filter_heatmap{suffix}{shuffle_suffix}.pdf",
     )
     fig = plot_filtered_heatmap(
         filtered_barcodes,
@@ -594,7 +603,7 @@ def spatial_filter_analysis(
     # 2. Square dimensions heatmap with labels and highlights
     square_path = os.path.join(
         SPATIAL_FILTER_OUTPUT_DIR,
-        f"spatial_filter_heatmap_square{suffix}{shuffle_suffix}_{date_str}.png",
+        f"spatial_filter_heatmap_square{suffix}{shuffle_suffix}.pdf",
     )
     plot_filtered_heatmap(
         filtered_barcodes,
@@ -612,7 +621,7 @@ def spatial_filter_analysis(
     # 3. Clean heatmap - no labels, but with highlights
     clean_highlights_path = os.path.join(
         SPATIAL_FILTER_OUTPUT_DIR,
-        f"spatial_filter_heatmap_clean_highlights{suffix}{shuffle_suffix}_{date_str}.png",
+        f"spatial_filter_heatmap_clean_highlights{suffix}{shuffle_suffix}.pdf",
     )
     plot_filtered_heatmap(
         filtered_barcodes,
@@ -630,7 +639,7 @@ def spatial_filter_analysis(
     # 4. Minimal heatmap - no labels, no highlights
     minimal_path = os.path.join(
         SPATIAL_FILTER_OUTPUT_DIR,
-        f"spatial_filter_heatmap_minimal{suffix}{shuffle_suffix}_{date_str}.png",
+        f"spatial_filter_heatmap_minimal{suffix}{shuffle_suffix}.pdf",
     )
     plot_filtered_heatmap(
         filtered_barcodes,
@@ -652,7 +661,6 @@ def spatial_filter_analysis(
         filtered_segment_ids,
         target_segments,
         SPATIAL_FILTER_OUTPUT_DIR,
-        date_str,
         shuffle_suffix,
         shuffle_somas,
         random_seed,
@@ -671,7 +679,6 @@ def spatial_filter_analysis(
     }
 
     print(f"\nSpatial filter analysis completed successfully!")
-    print(f"Results saved with date: {date_str}")
     print(f"Output directory: {SPATIAL_FILTER_OUTPUT_DIR}")
     print(f"Generated heatmap variants: {list(heatmap_outputs.keys())}")
 
@@ -751,11 +758,10 @@ def create_custom_heatmap(
         filtered_segment_ids = [filtered_segment_ids[i] for i in shuffle_order]
 
     # Create output path
-    date_str = datetime.now().strftime("%y%m%d")
     shuffle_suffix = "_shuffled" if shuffle_somas else ""
     output_path = os.path.join(
         SPATIAL_FILTER_OUTPUT_DIR,
-        f"spatial_filter_heatmap_{output_name}{shuffle_suffix}_{date_str}.png",
+        f"spatial_filter_heatmap_{output_name}{shuffle_suffix}.pdf",
     )
 
     # Create heatmap
