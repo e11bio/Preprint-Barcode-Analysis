@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import monte_carlo_interpretation as mc
 import pandas as pd
 import seaborn as sns
+from matplotlib.ticker import LogFormatterMathtext, LogLocator
+import logging
 
 # Import plotting settings
 from plot_settings import (
@@ -16,18 +18,391 @@ from plot_settings import (
     set_plot_style,
 )
 
-from matplotlib import font_manager as fm
+# set up logging
+logging.basicConfig(
+    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
-# Use DejaVu Sans for superscripts
-dejavu = fm.FontProperties(family="DejaVu Sans")
+
+def plot_fraction_unique_cells(
+    df,
+    sort_order,
+    legend_labels,
+    n_somas,
+    fraction_unique_cells,
+    output_dir,
+    dpi,
+    plot_sizes,
+    experimental_point_style,
+    mc,  # keep this global dependency explicit
+):
+    """Plot fraction of unique barcodes vs number of cells."""
+    fig, ax = plt.subplots(figsize=plot_sizes["fraction_unique_cells"])
+    df_plot = df.copy()
+
+    # sort for consistent legend ordering
+    df_plot["sort_key"] = df_plot["type"].apply(
+        lambda x: mc.get_sort_key(x, sort_order)
+    )
+    df_plot = df_plot.sort_values("sort_key").drop("sort_key", axis=1)
+    df_plot["type"] = df_plot["type"].map(legend_labels).fillna(df_plot["type"])
+
+    sns.lineplot(
+        data=df_plot,
+        x="num_samples",
+        y="fraction_unique_cells",
+        hue="type",
+        errorbar=("pi", 95),
+        ax=ax,
+        legend=False,
+    )
+
+    # log scale + clean ticks
+    ax.set_xscale("log")
+    ax.xaxis.set_major_locator(LogLocator(base=10.0, numticks=7))
+    ax.xaxis.set_major_formatter(LogFormatterMathtext())
+    ax.tick_params(axis="x", which="minor", bottom=False)
+
+    ax.set_xlabel("Number of cells modeled")
+    ax.set_ylabel("Fraction of cells with a unique barcode")
+
+    # reference line + data points
+    ax.hlines(
+        0.5,
+        df["num_samples"].min(),
+        df["num_samples"].max(),
+        color="black",
+        linestyle="--",
+        linewidth=0.5,
+        label="$LL_{50}$",
+    )
+    ax.scatter(n_somas, fraction_unique_cells, **experimental_point_style)
+
+    ax.legend(frameon=True, facecolor="white", edgecolor="black", framealpha=1.0)
+
+    sns.despine()
+    plt.tight_layout()
+    save_path = os.path.join(output_dir, "fraction_unique_cells.pdf")
+    fig.savefig(save_path, dpi=dpi)
+    print(f"Fraction unique cells plot saved to {save_path}")
+    # logging.INFO(f"Fraction unique cells plot saved to {output_dir}")
+
+
+def plot_unique_count(
+    df,
+    sort_order,
+    legend_labels,
+    n_somas,
+    n_unique_codes,
+    output_dir,
+    dpi,
+    plot_sizes,
+    experimental_point_style,
+    mc,
+):
+    """Plot number of unique codes vs number of cells."""
+    fig, ax = plt.subplots(figsize=plot_sizes["unique_count"])
+    df_plot = df.copy()
+
+    # sort for consistent legend ordering
+    df_plot["sort_key"] = df_plot["type"].apply(
+        lambda x: mc.get_sort_key(x, sort_order)
+    )
+    df_plot = df_plot.sort_values("sort_key").drop("sort_key", axis=1)
+    df_plot["type"] = df_plot["type"].map(legend_labels).fillna(df_plot["type"])
+
+    sns.lineplot(
+        data=df_plot,
+        x="num_samples",
+        y="unique_count",
+        hue="type",
+        errorbar=("pi", 95),
+        ax=ax,
+    )
+
+    # log scale + clean ticks
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.xaxis.set_major_locator(LogLocator(base=10.0, numticks=7))
+    ax.xaxis.set_major_formatter(LogFormatterMathtext())
+    ax.tick_params(axis="x", which="minor", bottom=False)
+
+    ax.set_xlabel("Number of cells modeled")
+    ax.set_ylabel("Number of codes generated")
+
+    # experimental data
+    ax.scatter(n_somas, n_unique_codes, **experimental_point_style)
+
+    ax.legend(frameon=True, facecolor="white", edgecolor="black", framealpha=1.0)
+
+    sns.despine()
+    plt.tight_layout()
+    save_path = os.path.join(output_dir, "unique_count.pdf")
+    fig.savefig(save_path, dpi=dpi)
+    print(f"Unique count plot saved to {save_path}")
+
+
+def create_labeling_limit_table(metrics, legend_labels, output_path, plot_sizes, dpi):
+    """
+    Create and save a labeling limit table figure.
+    Rows are included only if all *_mean columns are non-NaN.
+    SD columns are dynamically paired with mean columns.
+    Column labels are automatically derived from *_mean column names.
+    """
+    # Identify mean and corresponding sd columns
+    mean_cols = sorted([c for c in metrics.columns if c.endswith("_mean")])
+    sd_cols = [c.replace("_mean", "_sd") for c in mean_cols]
+
+    # Collect rows
+    table_data = []
+    for _, row in metrics.iterrows():
+        if row[mean_cols].notna().all():
+            display_type = legend_labels.get(row["type"], row["type"])
+            row_data = [display_type]  # first column
+            for m_col, s_col in zip(mean_cols, sd_cols):
+                row_data.extend([row[m_col], row[s_col]])
+            table_data.append(row_data)
+
+    if not table_data:
+        return None  # Nothing to plot
+
+    # Format table: first col = type, then mean±sd for each
+    formatted_table_data = []
+    for row in table_data:
+        type_name = textwrap.fill(row[0], width=15)
+        formatted_values = [
+            mc.format_mean_sd(mean, sd, compact=True)
+            for mean, sd in zip(row[1::2], row[2::2])
+        ]
+        formatted_table_data.append([type_name] + formatted_values)
+
+    # Build column labels dynamically from *_mean columns
+    col_labels = ["Type"]
+    for m_col in mean_cols:
+        # Extract numeric part from column name if possible
+        label_num = "".join([c for c in m_col if c.isdigit()])
+        col_labels.append(f"$LL_{{{label_num}}}$" if label_num else m_col)
+
+    # Build figure
+    fig_table, ax_table = plt.subplots(figsize=plot_sizes["labeling_limit_table"])
+    ax_table.axis("tight")
+    ax_table.axis("off")
+
+    table = ax_table.table(
+        cellText=formatted_table_data,
+        colLabels=col_labels,
+        cellLoc="center",
+        loc="center",
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(8)
+    table.scale(1, 2)
+
+    # Smart column widths
+    col_lengths = [
+        mc.get_max_content_length(j, formatted_table_data)
+        for j in range(len(col_labels))
+    ]
+    total_length = sum(col_lengths)
+    min_width, max_width = 0.15, 0.5
+    base_widths = [
+        max(min_width, min(max_width, length / total_length)) for length in col_lengths
+    ]
+    base_widths[0] = max(0.25, base_widths[0])  # widen first col
+    width_sum = sum(base_widths)
+    target_sum = 1.2
+    widths = [w * target_sum / width_sum for w in base_widths]
+
+    for i in range(len(formatted_table_data) + 1):  # +1 for header
+        for j in range(len(col_labels)):
+            cell = table[(i, j)]
+            if i == 0:
+                cell.set_facecolor("#E6E6E6")
+                cell.set_text_props(weight="bold")
+            else:
+                cell.set_facecolor("white")
+            cell.set_edgecolor("black")
+            cell.set_linewidth(0.5)
+            cell.set_width(widths[j])
+
+    save_path = os.path.join(output_path, "labeling_limit_table.pdf")
+    fig_table.savefig(
+        save_path,
+        dpi=dpi,
+        bbox_inches="tight",
+    )
+    plt.close(fig_table)
+    print(f"Labeling limit table saved to {save_path}")
+    # return output_path
+
+
+def plot_summary_table(
+    df,
+    legend_labels=None,
+    sort_order=None,
+    output_dir=".",
+    plot_sizes=None,
+    dpi=300,
+    cell_thresholds=None,
+    font_size=8,
+):
+    """
+    Generate a summary table as its own figure showing number of unique barcodes
+    at various sample sizes with saturation indicated by "–".
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing 'type', 'num_samples', 'length', 'unique_count'.
+    legend_labels : dict, optional
+        Mapping from type to display name.
+    sort_order : list, optional
+        Custom sort order for types.
+    output_dir : str
+        Directory to save the table PDF.
+    plot_sizes : dict
+        Dictionary with key "summary_table" for figure size (e.g., (6,4)).
+    dpi : int
+        Figure DPI.
+    cell_thresholds : list of int
+        Cell counts to display as columns. Defaults to 10, 100, ..., 1e7.
+    font_size : int
+        Font size for table.
+    """
+    if legend_labels is None:
+        legend_labels = {}
+    if sort_order is None:
+        sort_order = df["type"].unique().tolist()
+    if plot_sizes is None:
+        plot_sizes = {"summary_table": (6, 4)}
+    if cell_thresholds is None:
+        cell_thresholds = [10, 100, 1000, 10000, 100000, 1000000, 10000000]
+
+    # Sort types
+    available_types = df["type"].unique().tolist()
+    type_order_with_sort_key = [
+        (t, mc.get_sort_key(t, sort_order)) for t in available_types
+    ]
+    type_order_with_sort_key.sort(key=lambda x: x[1])
+    type_order = [t[0] for t in type_order_with_sort_key]
+
+    # Format header in 10^n notation
+    power_map = {10**i: rf"$10^{i}$" for i in range(1, 8)}
+    header_row = ["Type"] + [power_map.get(th, str(th)) for th in cell_thresholds]
+
+    # Build table data
+    summary_table_data = []
+    for barcode_type in type_order:
+        mapped_type_name = legend_labels.get(barcode_type, barcode_type)
+        wrapped_type_name = textwrap.fill(mapped_type_name, width=15)
+        row_data = [wrapped_type_name]
+
+        # Theoretical max
+        type_rows = df[df["type"] == barcode_type]
+        type_length = type_rows["length"].iloc[0] if not type_rows.empty else None
+        theoretical_max = (
+            (2**type_length - 1) if type_length is not None else float("inf")
+        )
+        saturated = False
+
+        for threshold in cell_thresholds:
+            if saturated:
+                row_data.append("–")
+                continue
+
+            type_data = type_rows[type_rows["num_samples"] == threshold]
+            if not type_data.empty:
+                mean_codes = type_data["unique_count"].mean()
+                sd_codes = type_data["unique_count"].std()
+
+                if mean_codes >= theoretical_max * 0.99:
+                    # Show the maximum value this time, but mark as saturated for next columns
+                    row_data.append(
+                        mc.format_mean_sd(mean_codes, sd_codes, compact=True)
+                    )
+                    saturated = True  # Mark saturated for subsequent columns
+                else:
+                    row_data.append(
+                        mc.format_mean_sd(mean_codes, sd_codes, compact=True)
+                    )
+            else:
+                row_data.append("–")
+
+        summary_table_data.append(row_data)
+
+    # Create figure and table
+    fig, ax = plt.subplots(figsize=plot_sizes["summary_table"])
+    ax.axis("tight")
+    ax.axis("off")
+
+    table = ax.table(
+        cellText=summary_table_data,
+        colLabels=header_row,
+        cellLoc="center",
+        loc="center",
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(font_size)
+    table.scale(1, 2)
+
+    # Smart column widths based on formatted strings
+    def get_max_content_length_summary(col_index):
+        # Header
+        header_len = max(len(line) for line in header_row[col_index].split("\n"))
+        # Data content
+        content_len = max(
+            len(str(row[col_index]).replace("\n", "")) for row in summary_table_data
+        )
+        return max(header_len, content_len)
+
+    col_lengths_summary = [
+        get_max_content_length_summary(j) for j in range(len(header_row))
+    ]
+    total_length_summary = sum(col_lengths_summary)
+    min_width, max_width = 0.03, 0.18
+    base_widths_summary = [
+        max(min_width, min(max_width, length / total_length_summary))
+        for length in col_lengths_summary
+    ]
+    base_widths_summary[0] = max(0.15, min(0.35, base_widths_summary[0]))
+    width_sum_summary = sum(base_widths_summary)
+    target_sum_summary = 1.1
+    widths_summary = [
+        w * target_sum_summary / width_sum_summary for w in base_widths_summary
+    ]
+
+    # Apply widths and style
+    for i in range(len(summary_table_data) + 1):
+        for j in range(len(header_row)):
+            cell = table[(i, j)]
+            if i == 0:
+                cell.set_facecolor("#E6E6E6")
+                cell.set_text_props(weight="bold")
+            else:
+                cell.set_facecolor("white")
+            cell.set_edgecolor("black")
+            cell.set_linewidth(0.5)
+            cell.set_width(widths_summary[j])
+
+    # Save figure
+    save_path = os.path.join(output_dir, "summary_table.pdf")
+    fig.savefig(
+        save_path,
+        dpi=dpi,
+        bbox_inches=None,
+    )
+    plt.close(fig)
+    print(f"Summary table saved to {save_path}")
+
+
 # --------------------------------#
 # where to save the data and how big the plots are
 # Define plot sizes
 PLOT_SIZES = {
     "fraction_unique_cells": (3, 2.5),
     "unique_count": (3, 2.5),
-    "labeling_limit_table": (3, 2.5),
-    "summary_table": (3.5, 2.5),
+    "labeling_limit_table": (2.5, 2.5),
+    "summary_table": (4, 2.5),
 }
 
 # Define experimental data point style
@@ -85,23 +460,6 @@ sort_order = [
 
 
 # --------------------------------#
-# calculating the per group maximmus
-# getting maximums
-# # keep the first occurrence of each type-length combination to preserve order
-# unique_combinations = df[["type", "length"]].drop_duplicates()
-# counts = (
-#     df.groupby(["type", "length"]).size().rename("count")
-# )  # count the number of rows per type-length (for capping)
-# unique_combinations = unique_combinations.merge(
-#     counts, on=["type", "length"]
-# )  # merge counts back
-# unique_combinations["unique_count"] = (2 ** unique_combinations["length"]) - 1
-
-# # optional: drop 'count' if not needed
-# theoretical_values = unique_combinations.drop(columns="count")
-
-
-# --------------------------------#
 # then the ec50 from gpt
 
 # 1) Compute f(n) = mean unique_fraction by method
@@ -151,6 +509,54 @@ metrics = pd.DataFrame(metrics)
 metrics["sort_key"] = metrics["type"].apply(lambda x: mc.get_sort_key(x, sort_order))
 metrics = metrics.sort_values(["sort_key", "length"]).drop("sort_key", axis=1)
 # print(metrics)
+# --------------------------------#
+# now we will do some clean up functions...
+
+
+def add_missing_max_points(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ensure all types have a datapoint at the maximum num_samples.
+    If missing, add a row at max_n_samples with the theoretical maximum
+    barcode count for that type.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Must contain columns: ['num_samples', 'iteration', 'unique_count',
+        'unique_fraction', 'length', 'type'].
+
+    Returns
+    -------
+    pd.DataFrame
+        Original df with missing max points added.
+    """
+    max_n_samples = df["num_samples"].max()
+
+    types_at_max = df[df["num_samples"] == max_n_samples]["type"].unique()
+    all_types = df["type"].unique()
+    missing_types = set(all_types) - set(types_at_max)
+
+    if not missing_types:
+        return df  # nothing to do
+
+    missing_data = []
+    for missing_type in missing_types:
+        type_length = df.loc[df["type"] == missing_type, "length"].iloc[0]
+        theoretical_max = (2**type_length) - 1
+
+        missing_data.append(
+            {
+                "num_samples": max_n_samples,
+                "iteration": 0,
+                "unique_count": theoretical_max,
+                "unique_fraction": theoretical_max / max_n_samples,
+                "length": type_length,
+                "type": missing_type,
+                "cells_appearing_once": theoretical_max,
+            }
+        )
+
+    return pd.concat([df, pd.DataFrame(missing_data)], ignore_index=True)
 
 
 def configure_plot_style(settings):
@@ -200,365 +606,223 @@ if __name__ == "__main__":
     apply_style(settings)
     configure_plot_style(settings)
 
-    # # Ensure all types have data at the maximum n_samples
-    # max_n_samples = df["num_samples"].max()
+    # Ensure all types have data at the maximum n_samples
+    df = add_missing_max_points(df)
 
-    # # Find types that don't have data at max_n_samples
-    # types_at_max = df[df["num_samples"] == max_n_samples]["type"].unique()
-    # all_types = df["type"].unique()
-    # missing_types = set(all_types) - set(types_at_max)
-
-    # # For missing types, add a data point at max_n_samples using their theoretical maximum
-    # if missing_types:
-    #     missing_data = []
-    #     for missing_type in missing_types:
-    #         # Get the length for this type
-    #         type_length = df[df["type"] == missing_type]["length"].iloc[0]
-    #         theoretical_max = (2**type_length) - 1
-
-    #         # Create a data point at max_n_samples
-    #         missing_data.append(
-    #             {
-    #                 "num_samples": max_n_samples,
-    #                 "iteration": 0,
-    #                 "unique_count": theoretical_max,
-    #                 "unique_fraction": theoretical_max / max_n_samples,
-    #                 "length": type_length,
-    #                 "type": missing_type,
-    #                 "cells_appearing_once": theoretical_max,  # Assuming all are unique at saturation
-    #             }
-    #         )
-
-    #     # Add missing data to dataframe
-    #     missing_df = pd.DataFrame(missing_data)
-    #     df = pd.concat([df, missing_df], ignore_index=True)
-
-    # Plot and save figures
-    fig, ax = plt.subplots(figsize=PLOT_SIZES["fraction_unique_cells"])
-    df_plot = df.copy()
-    # Sort dataframe by custom order for consistent legend ordering
-    df_plot["sort_key"] = df_plot["type"].apply(
-        lambda x: mc.get_sort_key(x, sort_order)
-    )
-    df_plot = df_plot.sort_values("sort_key").drop("sort_key", axis=1)
-    df_plot["type"] = df_plot["type"].map(legend_labels).fillna(df_plot["type"])
-
-    sns.lineplot(
-        data=df_plot,
-        x="num_samples",
-        y="fraction_unique_cells",
-        hue="type",
-        # style="type",
-        errorbar=("pi", 95),
-        ax=ax,
-        legend=False,
-    )
-    ax.set_xscale("log")
-    ax.set_xlabel("Number of cells modeled")
-    ax.set_ylabel("Fraction of cells with a unique barcode")
-    # Set consistent x-axis ticks for both plots
-    ax.set_xticks([1e1, 1e2, 1e3, 1e4, 1e5, 1e6])
-    ax.set_xticklabels(
-        [r"$10^1$", r"$10^2$", r"$10^3$", r"$10^4$", r"$10^5$", r"$10^6$"]
-    )
-    # Remove minor ticks to match the second plot
-    ax.tick_params(axis="x", which="minor", bottom=False)
-
-    ax.hlines(
-        0.5, 1, 1000000, color="black", linestyle="--", linewidth=0.5, label="$LL_{50}$"
-    )
-
-    ax.legend(frameon=True, facecolor="white", edgecolor="black", framealpha=1.0)
-    ax.scatter(n_somas, fraction_unique_cells, **EXPERIMENTAL_POINT_STYLE)
-
-    sns.despine()
-    plt.tight_layout()
-    # plt.subplots_adjust(right=0.7, bottom=0.2)
-    fig.savefig(
-        os.path.join(OUTPUT_DIR, "fraction_unique_cells.pdf"),
+    plot_fraction_unique_cells(
+        df=df,
+        sort_order=sort_order,
+        legend_labels=legend_labels,
+        n_somas=n_somas,
+        fraction_unique_cells=fraction_unique_cells,
+        output_dir=OUTPUT_DIR,
         dpi=DPI,
-        bbox_inches=None,
+        plot_sizes=PLOT_SIZES,
+        experimental_point_style=EXPERIMENTAL_POINT_STYLE,
+        mc=mc,
     )
 
-    # -------------------------------- #
-    fig, ax = plt.subplots(figsize=PLOT_SIZES["unique_count"])
-    sns.lineplot(
-        data=df_plot,
-        x="num_samples",
-        y="unique_count",
-        hue="type",
-        # style="type",
-        errorbar=("pi", 95),
-        ax=ax,
-        # legend=False,
+    plot_unique_count(
+        df=df,
+        sort_order=sort_order,
+        legend_labels=legend_labels,
+        n_somas=n_somas,
+        n_unique_codes=n_unique_codes,
+        output_dir=OUTPUT_DIR,
+        dpi=DPI,
+        plot_sizes=PLOT_SIZES,
+        experimental_point_style=EXPERIMENTAL_POINT_STYLE,
+        mc=mc,
     )
-    ax.set_yscale("log")
-    ax.set_xscale("log")
-    ax.set_xlabel("Number of cells modeled")
-    ax.set_ylabel("Number of codes generated")
-    # Set consistent x-axis ticks for both plots
-    ax.set_xticks([1e1, 1e2, 1e3, 1e4, 1e5, 1e6])
-    ax.set_xticklabels(
-        [r"$10^1$", r"$10^2$", r"$10^3$", r"$10^4$", r"$10^5$", r"$10^6$"]
-    )
-    # Add experimental data point
-    ax.scatter(n_somas, n_unique_codes, **EXPERIMENTAL_POINT_STYLE)
-
-    # aesthetics
-    sns.despine()
-    ax.legend(frameon=True, facecolor="white", edgecolor="black", framealpha=1.0)
-
-    # plt.subplots_adjust(right=0.7, bottom=0.2)
-    plt.tight_layout()
-    fig.savefig(os.path.join(OUTPUT_DIR, "unique_count.pdf"), dpi=DPI, bbox_inches=None)
 
     # Save metrics to markdown
     mc.save_metrics_to_markdown(metrics, OUTPUT_DIR, df)
 
-    # -------------------------------- #
-    # Create a separate table as its own image
-    table_data = []
-    for _, row in metrics.iterrows():
-        if (
-            not pd.isna(row["n75_mean"])
-            and not pd.isna(row["n50_mean"])
-            and not pd.isna(row["n25_mean"])
-        ):
-            # Apply legend mapping if available
-            display_type = legend_labels.get(row["type"], row["type"])
-            table_data.append(
-                [
-                    display_type,
-                    row["n75_mean"],
-                    row["n50_mean"],
-                    row["n25_mean"],
-                    row["n75_sd"],
-                    row["n50_sd"],
-                    row["n25_sd"],
-                ]
-            )
-
-    if table_data:
-        # Format data with mean ± SD style
-        formatted_table_data = []
-        for row in table_data:
-            # Wrap type name
-            type_name = textwrap.fill(row[0], width=15)
-            n75 = mc.format_mean_sd(
-                row[1],
-                row[4],
-                compact=True,
-            )  # median ± IQR format
-            n50 = mc.format_mean_sd(
-                row[2],
-                row[5],
-                compact=True,
-            )  # median ± IQR format
-            n25 = mc.format_mean_sd(row[3], row[6], compact=True)  # median ± IQR format
-            formatted_table_data.append([type_name, n75, n50, n25])
-
-        fig_table, ax_table = plt.subplots(figsize=PLOT_SIZES["labeling_limit_table"])
-        ax_table.axis("tight")
-        ax_table.axis("off")
-
-        table = ax_table.table(
-            cellText=formatted_table_data,
-            colLabels=["Type", "$LL_{75}$", "$LL_{50}$", "$LL_{25}$"],
-            cellLoc="center",
-            loc="center",
-        )
-        table.auto_set_font_size(False)
-        table.set_fontsize(8)
-        table.scale(1, 2)
-
-        # Smart column sizing based on content
-
-        # Calculate relative column widths
-        col_lengths = [
-            mc.get_max_content_length(j, formatted_table_data) for j in range(4)
-        ]
-        total_length = sum(col_lengths)
-
-        # Set minimum and maximum widths
-        min_width, max_width = 0.15, 0.5
-        base_widths = [
-            max(min_width, min(max_width, length / total_length))
-            for length in col_lengths
-        ]
-
-        # Ensure first column (Type) has reasonable width for text wrapping
-        base_widths[0] = max(0.25, base_widths[0])
-
-        # Normalize to sum to reasonable total
-        width_sum = sum(base_widths)
-        target_sum = 1.2  # Slightly wider table
-        widths = [w * target_sum / width_sum for w in base_widths]
-
-        # Style the table
-        for i in range(len(formatted_table_data) + 1):  # +1 for header
-            for j in range(4):  # 4 columns
-                cell = table[(i, j)]
-                if i == 0:  # Header row
-                    cell.set_facecolor("#E6E6E6")
-                    cell.set_text_props(weight="bold")
-                else:
-                    cell.set_facecolor("white")
-                cell.set_edgecolor("black")
-                cell.set_linewidth(0.5)
-
-                # Apply smart column widths
-                cell.set_width(widths[j])
-
-        fig_table.savefig(
-            os.path.join(OUTPUT_DIR, "labeling_limit_table.pdf"),
-            dpi=DPI,
-            bbox_inches="tight",
-        )
-        plt.close(fig_table)
-
+    create_labeling_limit_table(
+        metrics=metrics,
+        legend_labels=legend_labels,
+        output_path=OUTPUT_DIR,
+        plot_sizes=PLOT_SIZES,
+        dpi=DPI,
+    )
     # -------------------------------- #
     # Create summary table as its own image
-    cell_thresholds = [10, 100, 1000, 10000, 100000]
 
-    # Use the same sorting as the LL table
-    available_types = df["type"].unique().tolist()
-    type_order_with_sort_key = [
-        (t, mc.get_sort_key(t, sort_order)) for t in available_types
-    ]
-    type_order_with_sort_key.sort(key=lambda x: x[1])  # Sort by sort key
-    type_order = [t[0] for t in type_order_with_sort_key]  # Extract just the type names
+    plot_summary_table(
+        df=df,
+        legend_labels=legend_labels,
+        sort_order=sort_order,
+        output_dir=OUTPUT_DIR,
+        plot_sizes=PLOT_SIZES,
+        dpi=DPI,
+        cell_thresholds=[10, 100, 1000, 10000, 100000, 1000000],
+        font_size=8,
+    )
 
-    summary_table_data = []
+    # cell_thresholds = [10, 100, 1000, 10000, 100000, 1000000, 10000000]
 
-    # Create header row with 10^n notation for cell counts
-    import textwrap
+    # # Use the same sorting as the LL table
+    # available_types = df["type"].unique().tolist()
+    # type_order_with_sort_key = [
+    #     (t, mc.get_sort_key(t, sort_order)) for t in available_types
+    # ]
+    # type_order_with_sort_key.sort(key=lambda x: x[1])  # Sort by sort key
+    # type_order = [t[0] for t in type_order_with_sort_key]  # Extract just the type names
 
-    # Convert cell thresholds to 10^n notation
-    def format_cell_count_header(count):
-        if count == 10:
-            return r"$10^1$"
-        elif count == 100:
-            return r"$10^2$"
-        elif count == 1000:
-            return r"$10^3$"
-        elif count == 10000:
-            return r"$10^4$"
-        elif count == 100000:
-            return r"$10^5$"
-        else:
-            return str(count)
+    # summary_table_data = []
 
-    # Swapped layout: Types as rows, Cell counts as columns
-    cell_count_headers = [
-        format_cell_count_header(threshold) for threshold in cell_thresholds
-    ]
-    wrapped_header_row = ["Type"] + cell_count_headers
-    header_row = ["Type"] + [
-        str(threshold) for threshold in cell_thresholds
-    ]  # Keep original for data processing
+    # # Create header row with 10^n notation for cell counts
 
-    # Create data rows - one row per barcode type
-    for barcode_type in type_order:
-        # Apply legend mapping and text wrapping to type name
-        mapped_type_name = legend_labels.get(barcode_type, barcode_type)
-        wrapped_type_name = textwrap.fill(mapped_type_name, width=15)
-        row_data = [wrapped_type_name]
+    # # Convert cell thresholds to 10^n notation
+    # def format_cell_count_header(count):
+    #     # Use a cleaner approach with a dictionary lookup
+    #     power_map = {
+    #         10: r"$10^1$",
+    #         100: r"$10^2$",
+    #         1000: r"$10^3$",
+    #         10000: r"$10^4$",
+    #         100000: r"$10^5$",
+    #         1000000: r"$10^6$",
+    #         10000000: r"$10^7$",
+    #     }
+    #     return power_map.get(count, str(count))
 
-        for threshold in cell_thresholds:
-            # Filter data for this type and cell count
-            type_data = df[
-                (df["type"] == barcode_type) & (df["num_samples"] == threshold)
-            ]
+    # # Swapped layout: Types as rows, Cell counts as columns
+    # cell_count_headers = [
+    #     format_cell_count_header(threshold) for threshold in cell_thresholds
+    # ]
+    # wrapped_header_row = ["Type"] + cell_count_headers
+    # header_row = ["Type"] + [
+    #     str(threshold) for threshold in cell_thresholds
+    # ]  # Keep original for data processing
 
-            if not type_data.empty:
-                mean_codes = type_data["unique_count"].mean()
-                sd_codes = type_data["unique_count"].std()
-                formatted_value = mc.format_mean_sd(mean_codes, sd_codes, compact=True)
-                row_data.append(formatted_value)
-            else:
-                row_data.append("–")
+    # # Create data rows - one row per barcode type
+    # for barcode_type in type_order:
+    #     # Apply legend mapping and text wrapping to type name
+    #     mapped_type_name = legend_labels.get(barcode_type, barcode_type)
+    #     wrapped_type_name = textwrap.fill(mapped_type_name, width=15)
+    #     row_data = [wrapped_type_name]
 
-        summary_table_data.append(row_data)
+    #     # Calculate theoretical maximum for this barcode type
+    #     type_length = (
+    #         df[df["type"] == barcode_type]["length"].iloc[0]
+    #         if not df[df["type"] == barcode_type].empty
+    #         else None
+    #     )
+    #     theoretical_max = (
+    #         (2**type_length) - 1 if type_length is not None else float("inf")
+    #     )
 
-    if summary_table_data:
-        fig_summary, ax_summary = plt.subplots(figsize=PLOT_SIZES["summary_table"])
-        ax_summary.axis("tight")
-        ax_summary.axis("off")
+    #     saturated = False  # Track if we've hit saturation
 
-        table_summary = ax_summary.table(
-            cellText=summary_table_data,
-            colLabels=wrapped_header_row,
-            cellLoc="center",
-            loc="center",
-        )
-        table_summary.auto_set_font_size(False)
-        table_summary.set_fontsize(8)  # Keep font size at 8
-        table_summary.scale(1, 2)  # Restore vertical scaling for readability
+    #     for threshold in cell_thresholds:
+    #         if saturated:
+    #             # Once saturated, all subsequent columns get "–"
+    #             row_data.append("–")
+    #             continue
 
-        # Smart column sizing for summary table
-        def get_max_content_length_summary(col_index):
-            """Get the maximum character length for a column in summary table"""
-            # Use the wrapped header for width calculation
-            header_lines = wrapped_header_row[col_index].split("\n")
-            max_len = max(
-                len(line) for line in header_lines
-            )  # Longest line in wrapped header
-            for row in summary_table_data:
-                # Handle multi-line content (like compact mean±SD format)
-                content_lines = str(row[col_index]).split("\n")
-                content_max_len = max(len(line) for line in content_lines)
-                max_len = max(max_len, content_max_len)
-            return max_len
+    #         # Filter data for this type and cell count
+    #         type_data = df[
+    #             (df["type"] == barcode_type) & (df["num_samples"] == threshold)
+    #         ]
 
-        col_lengths_summary = [
-            get_max_content_length_summary(j) for j in range(len(header_row))
-        ]
-        total_length_summary = sum(col_lengths_summary)
+    #         if not type_data.empty:
+    #             mean_codes = type_data["unique_count"].mean()
+    #             sd_codes = type_data["unique_count"].std()
 
-        # Set minimum and maximum widths - more aggressive for 3-inch constraint
-        min_width, max_width = 0.03, 0.18  # Much smaller max width
-        base_widths_summary = [
-            max(min_width, min(max_width, length / total_length_summary))
-            for length in col_lengths_summary
-        ]
+    #             # Check if we've reached theoretical saturation (within 1% tolerance)
+    #             if mean_codes >= theoretical_max * 0.99:
+    #                 saturated = True
+    #                 row_data.append("–")  # Use dash to indicate saturation
+    #             else:
+    #                 formatted_value = mc.format_mean_sd(
+    #                     mean_codes, sd_codes, compact=True
+    #                 )
+    #                 row_data.append(formatted_value)
+    #         else:
+    #             row_data.append("–")
 
-        # Ensure first column (Type) has more breathing room for text
-        base_widths_summary[0] = max(
-            0.15, min(0.35, base_widths_summary[0])
-        )  # More room for type names
+    #     summary_table_data.append(row_data)
 
-        # Make the numeric columns (columns 1-5) even narrower
-        for i in range(1, len(base_widths_summary)):
-            base_widths_summary[i] = min(
-                0.12, base_widths_summary[i]
-            )  # Cap numeric columns at 0.12
+    # if summary_table_data:
+    #     fig_summary, ax_summary = plt.subplots(figsize=PLOT_SIZES["summary_table"])
+    #     ax_summary.axis("tight")
+    #     ax_summary.axis("off")
 
-        # Normalize to fit within 3-inch constraint with 8pt font
-        width_sum_summary = sum(base_widths_summary)
-        target_sum_summary = 1.1  # Slightly more room for 8pt font and line breaks
-        widths_summary = [
-            w * target_sum_summary / width_sum_summary for w in base_widths_summary
-        ]
+    #     table_summary = ax_summary.table(
+    #         cellText=summary_table_data,
+    #         colLabels=wrapped_header_row,
+    #         cellLoc="center",
+    #         loc="center",
+    #     )
+    #     table_summary.auto_set_font_size(False)
+    #     table_summary.set_fontsize(8)  # Keep font size at 8
+    #     table_summary.scale(1, 2)  # Restore vertical scaling for readability
 
-        for i in range(len(summary_table_data) + 1):  # +1 for header
-            for j in range(len(header_row)):
-                cell = table_summary[(i, j)]
-                if i == 0:  # Header row
-                    cell.set_facecolor("#E6E6E6")
-                    cell.set_text_props(weight="bold")
-                else:
-                    cell.set_facecolor("white")
-                cell.set_edgecolor("black")
-                cell.set_linewidth(0.5)
+    #     # Smart column sizing for summary table
+    #     def get_max_content_length_summary(col_index):
+    #         """Get the maximum character length for a column in summary table"""
+    #         # Use the wrapped header for width calculation
+    #         header_lines = wrapped_header_row[col_index].split("\n")
+    #         max_len = max(
+    #             len(line) for line in header_lines
+    #         )  # Longest line in wrapped header
+    #         for row in summary_table_data:
+    #             # Handle multi-line content (like compact mean±SD format)
+    #             content_lines = str(row[col_index]).split("\n")
+    #             content_max_len = max(len(line) for line in content_lines)
+    #             max_len = max(max_len, content_max_len)
+    #         return max_len
 
-                # Apply smart column widths
-                cell.set_width(widths_summary[j])
+    #     col_lengths_summary = [
+    #         get_max_content_length_summary(j) for j in range(len(header_row))
+    #     ]
+    #     total_length_summary = sum(col_lengths_summary)
 
-        fig_summary.savefig(
-            os.path.join(OUTPUT_DIR, "summary_table.pdf"),
-            dpi=DPI,
-            bbox_inches=None,  # Respect the original figsize
-        )
-        plt.close(fig_summary)
+    #     # Set minimum and maximum widths - more aggressive for 3-inch constraint
+    #     min_width, max_width = 0.03, 0.18  # Much smaller max width
+    #     base_widths_summary = [
+    #         max(min_width, min(max_width, length / total_length_summary))
+    #         for length in col_lengths_summary
+    #     ]
+
+    #     # Ensure first column (Type) has more breathing room for text
+    #     base_widths_summary[0] = max(
+    #         0.15, min(0.35, base_widths_summary[0])
+    #     )  # More room for type names
+
+    #     # Make the numeric columns (columns 1-5) even narrower
+    #     for i in range(1, len(base_widths_summary)):
+    #         base_widths_summary[i] = min(
+    #             0.12, base_widths_summary[i]
+    #         )  # Cap numeric columns at 0.12
+
+    #     # Normalize to fit within 3-inch constraint with 8pt font
+    #     width_sum_summary = sum(base_widths_summary)
+    #     target_sum_summary = 1.1  # Slightly more room for 8pt font and line breaks
+    #     widths_summary = [
+    #         w * target_sum_summary / width_sum_summary for w in base_widths_summary
+    #     ]
+
+    #     for i in range(len(summary_table_data) + 1):  # +1 for header
+    #         for j in range(len(header_row)):
+    #             cell = table_summary[(i, j)]
+    #             if i == 0:  # Header row
+    #                 cell.set_facecolor("#E6E6E6")
+    #                 cell.set_text_props(weight="bold")
+    #             else:
+    #                 cell.set_facecolor("white")
+    #             cell.set_edgecolor("black")
+    #             cell.set_linewidth(0.5)
+
+    #             # Apply smart column widths
+    #             cell.set_width(widths_summary[j])
+
+    #     fig_summary.savefig(
+    #         os.path.join(OUTPUT_DIR, "summary_table.pdf"),
+    #         dpi=DPI,
+    #         bbox_inches=None,  # Respect the original figsize
+    #     )
+    #     plt.close(fig_summary)
 
     # plt.show()
