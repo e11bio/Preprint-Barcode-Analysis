@@ -239,12 +239,12 @@ def run_monte_carlo_model(
 
             if remaining_iterations == 0:
                 logging.info(
-                    f"Sample size {sample_size} already has {existing_count} iterations, skipping"
+                    f"Sample size {sample_size}, ({sample_size:,.0e}) already has {existing_count} iterations, skipping"
                 )
                 continue
 
             logging.info(
-                f"Processing sample size: {sample_size}, running {remaining_iterations} additional iterations (existing: {existing_count})"
+                f"Processing sample size: {sample_size}, ({sample_size:,.0e})running {remaining_iterations} additional iterations (existing: {existing_count})"
             )
 
             with Manager() as manager:
@@ -433,7 +433,8 @@ if __name__ == "__main__":
         # 819200,
         # 1638400,
         # 3276800,
-        # 1e6,
+        1e6,
+        1e7,
     ]
     n_samples = [int(sample) for sample in n_samples]
 
@@ -457,39 +458,62 @@ if __name__ == "__main__":
         "E11 - ideal binary": (
             e11_distribution_binary,
             len(e11_distribution_binary),
+            None,  # max_samples: None means no limit
         ),
         # "Tetbow - 2 level binary": (
         #     tetbow_distribution_2level_binary,
         #     len(tetbow_distribution_2level_binary),
+        #     100000,  # max_samples: stop at 100k for short lengths
         # ),
         # "E11 - 2 level binary": (
         #     e11_distribution_binary_2level,
         #     len(e11_distribution_binary_2level),
+        #     None,  # max_samples: None means no limit
         # ),
         # "Brainbow - 2 level binary": (
         #     brainbow_distribution_2level_binary,
         #     len(brainbow_distribution_2level_binary),
+        #     10000,  # max_samples: stop at 10k for very short lengths
         # ),
-        # "Brainbow - ideal binary": (
-        #     brainbow_distribution_binary,
-        #     len(brainbow_distribution_binary),
-        # ),
+        "Brainbow - ideal binary": (
+            brainbow_distribution_binary,
+            len(brainbow_distribution_binary),
+            10**3,  # max_samples: stop at 1k for 3-channel system
+        ),
         "Tetbow - ideal binary": (
             tetbow_distribution_binary,
             len(tetbow_distribution_binary),
+            10**4,  # max_samples: stop at 50k for 7-channel system
         ),
     }
 
-    for name, (distribution, length) in distributions.items():
-        print(f"Running simulation for {name} with length {length}")
-        run_monte_carlo_model(
-            distribution,
-            n_samples,
-            n_trials,
-            length=length,
-            epitope_percentages=None,
-            kind=f"simulation - {name}",
-        )
+    for name, (distribution, length, max_samples) in distributions.items():
+        # Filter n_samples based on max_samples limit
+        if max_samples is not None:
+            filtered_samples = [n for n in n_samples if n <= max_samples]
+            print(
+                f"Running simulation for {name} with length {length}, max_samples={max_samples}"
+            )
+            print(
+                f"  Original samples: {len(n_samples)}, filtered samples: {len(filtered_samples)}"
+            )
+        else:
+            filtered_samples = n_samples
+            print(
+                f"Running simulation for {name} with length {length}, no max_samples limit"
+            )
+
+        if filtered_samples:  # Only run if there are samples to process
+            run_monte_carlo_model(
+                distribution,
+                filtered_samples,
+                n_trials,
+                length=length,
+                epitope_percentages=None,
+                kind=f"simulation - {name}",
+            )
+        else:
+            print(f"  Skipping {name} - no samples within max_samples limit")
 
     # Double the length for levels
     # doubled_length = 18 * 2
