@@ -27,7 +27,7 @@ EPITOPE_NAMES = {
     "Ty1-barcode-R2": "Ty1",
     "HA-barcode-R3": "HA",
     "T7-barcode-R6": "T7",
-    "VSVG-barcode-R6": "VSVG",
+    "VSVG-barcode-R6": "VSV",
     "AU5-barcode-R8": "AU5",
     "NWS-barcode-R9": "NWS",
     "SunTag-barcode-R9": "SUN",
@@ -89,11 +89,9 @@ def create_epitope_plot(soma_barcodes, settings):
     if settings["style"] == PlotStyle.POSTER:
         # For poster mode, use "Bit [number]" format based on order in target_channels
         custom_epitopes = [f"Bit {i + 1}" for i in range(len(target_channels))]
-        align_label = "right"
     else:
         # For paper mode, use the custom epitope names
         custom_epitopes = [EPITOPE_NAMES[name] for name in target_channels]
-        align_label = "left"
 
     epitope_df = pd.DataFrame(
         {"Epitope": custom_epitopes, "Proportion": epitope_proportions}
@@ -104,6 +102,14 @@ def create_epitope_plot(soma_barcodes, settings):
 
     # Create the plot (apply_style() already called in main, so just create figure)
     fig, ax = plt.subplots(figsize=settings["histogram_epitope_dist"], dpi=DPI)
+
+    # Override the whitegrid style to enable ticks - must be done after apply_style()
+    sns.set_style("ticks")
+
+    # Force enable tick marks and tick parameters (y-axis only)
+    plt.rcParams["ytick.left"] = True
+    plt.rcParams["ytick.major.size"] = 3.5
+    plt.rcParams["ytick.minor.visible"] = False
 
     # Create barplot
     bars = sns.barplot(
@@ -126,7 +132,7 @@ def create_epitope_plot(soma_barcodes, settings):
         "Protein bit",
         fontsize=settings["label_size"],
         fontfamily=settings["font_family"],
-        ha=align_label,
+        ha="center",  # Always center the x-axis label
         # labelpad=4,  # Reduced padding
     )
     ax.set_ylabel(
@@ -135,7 +141,13 @@ def create_epitope_plot(soma_barcodes, settings):
         fontfamily=settings["font_family"],
     )
 
-    sns.despine()
+    # Apply despine for clean look (ticks style already set above)
+    # Keep bottom and left spines to preserve tick marks
+    sns.despine(left=False, bottom=False)
+
+    # Force y-axis tick marks to be visible
+    ax.tick_params(axis="y", which="major", left=True, right=False, length=3.5)
+
     # Rotate x-axis labels to 90 degrees
     plt.xticks(rotation=90, ha="center")  # Font size handled by rcParams
 
