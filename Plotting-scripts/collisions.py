@@ -55,8 +55,7 @@ def configure_plot_style(settings):
             "legend.fontsize": settings["tick_size"],
             "text.color": "black",
             "axes.labelcolor": "black",
-            "xtick.color": "black",
-            "ytick.color": "black",
+            # Remove explicit tick colors to use default gentle gray
         }
     )
 
@@ -141,7 +140,7 @@ def create_collision_plot(collision_counts, settings):
         )
 
     ax.set_xticks(x_vals)
-    ax.set_xlabel("# of cells\nsharing barcode")
+    ax.set_xlabel("# of somas\nsharing barcode")
     ax.set_ylabel("Count of barcodes")
 
     return fig
@@ -268,32 +267,37 @@ def save_plots_and_docs(
         "collisions": {
             "plot": plots["collisions"],
             "title": None,
-            "xlabel": "# of cells\nsharing barcode",
+            "xlabel": "# of somas\nsharing barcode",
             "ylabel": "Count of barcodes",
+            "size_var": "histogram_collisions",
         },
         "collision_categories": {
             "plot": plots["collision_categories"],
             "title": None,  # No title for this plot
             "xlabel": None,  # Categories are self-explanatory
             "ylabel": "Fraction of somas",
+            "size_var": "histogram_collision_categories",
         },
         "min_distances": {
             "plot": plots["min_distances"],
             "title": None,
             "xlabel": "Hamming distance\nto nearest neighbor",
             "ylabel": "Count of somas",
+            "size_var": "histogram_hamming_distance",
         },
         "average_distances": {
             "plot": plots["average_distances"],
             "title": None,
-            "xlabel": "Mean Hamming distance\nto other cells",
+            "xlabel": "Mean Hamming distance\nto other somas",
             "ylabel": "Count of somas",
+            "size_var": "histogram_hamming_distance",
         },
         "all_distances": {
             "plot": plots["all_distances"],
             "title": None,
             "xlabel": "Hamming distance",
             "ylabel": "Fraction of pairwise\ndistances",
+            "size_var": "histogram_hamming_distance",
         },
     }
 
@@ -311,7 +315,7 @@ def save_plots_and_docs(
             name, settings["style"], "pdf", script_name="collisions"
         )
         config["plot"].savefig(filename, dpi=DPI, bbox_inches="tight")
-        saved_files.append(filename)
+        saved_files.append((filename, config["size_var"]))
         plt.close(config["plot"])
 
         # Calculate distance statistics
@@ -353,9 +357,9 @@ def save_plots_and_docs(
 
     print(f"Single-bit collisions: {single_bit_collisions}")
     print(f"Multi-bit collisions: {multi_bit_collisions}")
-    print(f"Total colliding cells: {total_colliding}")
+    print(f"Total colliding somas: {total_colliding}")
     print(
-        f"Verification - total cells with shared barcodes: {sum(count for count in collision_counts.values() if count > 1)}"
+        f"Verification - total somas with shared barcodes: {sum(count for count in collision_counts.values() if count > 1)}"
     )
 
     md_content = f"""# Collision Analysis Report
@@ -369,8 +373,8 @@ Analysis of barcode collisions and distance metrics for ground truth somas.
 - **Collision rate**: {(total_somas - unique_barcodes) / total_somas * 100:.1f}%
 
 ## Collision Analysis by Bit Count
-- **Single-bit cells in collisions**: {single_bit_collisions} ({single_bit_collisions / total_colliding * 100:.1f}% of colliding cells)
-- **Multi-bit cells in collisions**: {multi_bit_collisions} ({multi_bit_collisions / total_colliding * 100:.1f}% of colliding cells)
+- **Single-bit somas in collisions**: {single_bit_collisions} ({single_bit_collisions / total_colliding * 100:.1f}% of colliding somas)
+- **Multi-bit somas in collisions**: {multi_bit_collisions} ({multi_bit_collisions / total_colliding * 100:.1f}% of colliding somas)
 
 ## Distance Statistics
 - **Average distance**: {avg_distance:.2f}
@@ -379,11 +383,11 @@ Analysis of barcode collisions and distance metrics for ground truth somas.
 - **Standard deviation**: {std_distance:.2f}
 
 ## Generated Plots
-- Collision histogram: `collisions.pdf`
-- Collision categories: `collision_categories.pdf`
-- Minimum distances: `min_distances.pdf`  
-- Average distances: `average_distances.pdf`
-- All distances: `all_distances.pdf`
+- Collision histogram: `collisions.pdf` (size: {settings[plot_configs["collisions"]["size_var"]]})
+- Collision categories: `collision_categories.pdf` (size: {settings[plot_configs["collision_categories"]["size_var"]]})
+- Minimum distances: `min_distances.pdf` (size: {settings[plot_configs["min_distances"]["size_var"]]})
+- Average distances: `average_distances.pdf` (size: {settings[plot_configs["average_distances"]["size_var"]]})
+- All distances: `all_distances.pdf` (size: {settings[plot_configs["all_distances"]["size_var"]]})
 
 ## Methodology
 - **Distance Metric**: Hamming distance between binary barcode patterns
@@ -394,7 +398,7 @@ Analysis of barcode collisions and distance metrics for ground truth somas.
     with open(md_filename, "w") as f:
         f.write(md_content)
 
-    return saved_files + [md_filename]
+    return saved_files + [(md_filename, "N/A")]
 
 
 if __name__ == "__main__":
@@ -451,5 +455,8 @@ if __name__ == "__main__":
 
     # Print summary
     print("Collision analysis complete! Files saved:")
-    for filepath in saved_files:
-        print(f"  - {filepath}")
+    for filepath, size_var in saved_files:
+        if size_var != "N/A":
+            print(f"  - {filepath} (size variable: {size_var})")
+        else:
+            print(f"  - {filepath}")
