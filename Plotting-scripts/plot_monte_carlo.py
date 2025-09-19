@@ -1,4 +1,5 @@
 # load the data
+import logging
 import os
 import textwrap
 
@@ -7,7 +8,6 @@ import monte_carlo_interpretation as mc
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import LogFormatterMathtext, LogLocator
-import logging
 
 # Import plotting settings
 from plot_settings import (
@@ -74,8 +74,10 @@ def plot_fraction_unique_cells(
         color="black",
         linestyle="--",
         linewidth=0.5,
-        label="$LL_{50}$",
+        label="$SR_{50}$",
     )
+    # remove the legend for the experimental data
+    experimental_point_style["label"] = None
     ax.scatter(n_somas, fraction_unique_cells, **experimental_point_style)
 
     ax.legend(frameon=True, facecolor="white", edgecolor="black", framealpha=1.0)
@@ -142,9 +144,9 @@ def plot_unique_count(
     print(f"Unique count plot saved to {save_path}")
 
 
-def create_labeling_limit_table(metrics, legend_labels, output_path, plot_sizes, dpi):
+def create_singlet_rate_table(metrics, legend_labels, output_path, plot_sizes, dpi):
     """
-    Create and save a labeling limit table figure.
+    Create and save a singlet rate table figure.
     Rows are included only if all *_mean columns are non-NaN.
     SD columns are dynamically paired with mean columns.
     Column labels are automatically derived from *_mean column names.
@@ -169,7 +171,7 @@ def create_labeling_limit_table(metrics, legend_labels, output_path, plot_sizes,
     # Format table: first col = type, then mean±sd for each
     formatted_table_data = []
     for row in table_data:
-        type_name = textwrap.fill(row[0], width=15)
+        type_name = textwrap.fill(row[0], width=8)
         formatted_values = [
             mc.format_mean_sd(mean, sd, compact=True)
             for mean, sd in zip(row[1::2], row[2::2])
@@ -181,10 +183,10 @@ def create_labeling_limit_table(metrics, legend_labels, output_path, plot_sizes,
     for m_col in mean_cols:
         # Extract numeric part from column name if possible
         label_num = "".join([c for c in m_col if c.isdigit()])
-        col_labels.append(f"$LL_{{{label_num}}}$" if label_num else m_col)
+        col_labels.append(f"$SR_{{{label_num}}}$" if label_num else m_col)
 
     # Build figure
-    fig_table, ax_table = plt.subplots(figsize=plot_sizes["labeling_limit_table"])
+    fig_table, ax_table = plt.subplots(figsize=plot_sizes["singlet_rate_table"])
     ax_table.axis("tight")
     ax_table.axis("off")
 
@@ -225,14 +227,14 @@ def create_labeling_limit_table(metrics, legend_labels, output_path, plot_sizes,
             cell.set_linewidth(0.5)
             cell.set_width(widths[j])
 
-    save_path = os.path.join(output_path, "labeling_limit_table.pdf")
+    save_path = os.path.join(output_path, "singlet_rate_table.pdf")
     fig_table.savefig(
         save_path,
         dpi=dpi,
         bbox_inches="tight",
     )
     plt.close(fig_table)
-    print(f"Labeling limit table saved to {save_path}")
+    print(f"Singlet rate table saved to {save_path}")
     # return output_path
 
 
@@ -294,7 +296,7 @@ def plot_summary_table(
     summary_table_data = []
     for barcode_type in type_order:
         mapped_type_name = legend_labels.get(barcode_type, barcode_type)
-        wrapped_type_name = textwrap.fill(mapped_type_name, width=15)
+        wrapped_type_name = textwrap.fill(mapped_type_name, width=8)
         row_data = [wrapped_type_name]
 
         # Theoretical max
@@ -401,8 +403,8 @@ def plot_summary_table(
 PLOT_SIZES = {
     "fraction_unique_cells": (3, 2.5),
     "unique_count": (3, 2.5),
-    "labeling_limit_table": (2.5, 2.5),
-    "summary_table": (4, 2.5),
+    "singlet_rate_table": (2.5, 2.6),
+    "summary_table": (4, 2.4),
 }
 
 # Define experimental data point style
@@ -413,7 +415,7 @@ EXPERIMENTAL_POINT_STYLE = {
     "marker": (4, 1, 0),  # "",  # Diamond shape for better visibility
     "edgecolors": "white",  # White outline for contrast
     "linewidth": 0.5,  # Thicker outline
-    "label": "Observed data",
+    "label": "Soma sample",
 }
 
 # Define output directory
@@ -443,11 +445,13 @@ df = df[~df["type"].str.contains("2 level")]
 # --------------------------------#
 # labels and legend info
 
+# Data-fit 18ch ↔ Poisson-modeled 18ch
+
 legend_labels = {
-    "simulation - E11 - ideal binary": "Ideal 18ch",
-    "simulation - Brainbow - ideal binary": "Ideal 3ch",
-    "simulation - true soma data": "Extrapolated 18ch",
-    "simulation - Tetbow - ideal binary": "Ideal 7ch",
+    "simulation - E11 - ideal binary": "Poisson 18 bit",
+    "simulation - Brainbow - ideal binary": "Poisson 3 bit",
+    "simulation - true soma data": "Data-fit 18 bit",
+    "simulation - Tetbow - ideal binary": "Poisson 7 bit",
 }
 
 # Define custom sort order
@@ -638,7 +642,7 @@ if __name__ == "__main__":
     # Save metrics to markdown
     mc.save_metrics_to_markdown(metrics, OUTPUT_DIR, df)
 
-    create_labeling_limit_table(
+    create_singlet_rate_table(
         metrics=metrics,
         legend_labels=legend_labels,
         output_path=OUTPUT_DIR,
@@ -661,7 +665,7 @@ if __name__ == "__main__":
 
     # cell_thresholds = [10, 100, 1000, 10000, 100000, 1000000, 10000000]
 
-    # # Use the same sorting as the LL table
+    # # Use the same sorting as the SR table
     # available_types = df["type"].unique().tolist()
     # type_order_with_sort_key = [
     #     (t, mc.get_sort_key(t, sort_order)) for t in available_types
