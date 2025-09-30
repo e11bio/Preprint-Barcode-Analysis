@@ -254,6 +254,7 @@ def plot_clustered_heatmap(
         # Use settings heatmap size
         figsize = settings["heatmap"]
 
+    print(f"Using heatmap figsize: {figsize}")
     fig = plt.figure(figsize=figsize, dpi=DPI)
     ax = plt.gca()
 
@@ -477,6 +478,7 @@ def plot_clustered_heatmap_inverted(
     else:
         figsize = settings["heatmap"]
 
+    print(f"Inverted heatmap using figsize: {figsize}")
     fig = plt.figure(figsize=figsize, dpi=DPI)
     ax = plt.gca()
 
@@ -671,6 +673,7 @@ def plot_clustered_heatmap_simple(
     apply_style(settings)
 
     # Use settings heatmap size
+    print(f"Simple heatmap using figsize: {settings['heatmap']}")
     fig = plt.figure(figsize=settings["heatmap"], dpi=DPI)
     ax = plt.gca()
 
@@ -1078,16 +1081,24 @@ def hierarchical_clustering_analysis(
     heatmap_outputs = {}
 
     # 1. Heatmap with y-labels and transparent white cells
-    labels_path = get_output_filename(
+    labels_path_pdf = get_output_filename(
         "hierarchical_clustering_with_labels",
         settings["style"],
         "pdf",
         script_name="hierarchical-clustering",
     )
-    plot_clustered_heatmap(
+    labels_path_png = get_output_filename(
+        "hierarchical_clustering_with_labels",
+        settings["style"],
+        "png",
+        script_name="hierarchical-clustering",
+    )
+
+    # Create the heatmap and save both formats
+    fig = plot_clustered_heatmap(
         clustered_barcodes,
         clustered_segment_ids,
-        labels_path,
+        labels_path_pdf,
         settings,
         title_suffix,
         show_labels=True,
@@ -1097,19 +1108,37 @@ def hierarchical_clustering_analysis(
         transparent_bg=transparent_bg,
         reverse_channels=reverse_channels,
     )
-    heatmap_outputs["with_labels"] = labels_path
+    # Save PNG version with transparency if requested
+    fig.savefig(
+        labels_path_png,
+        dpi=DPI,
+        bbox_inches="tight",
+        pad_inches=0.2,
+        transparent=transparent_bg,
+    )
+    plt.close(fig)
+
+    heatmap_outputs["with_labels_pdf"] = labels_path_pdf
+    heatmap_outputs["with_labels_png"] = labels_path_png
 
     # 2. Clean heatmap without labels (for comparison)
-    clean_path = get_output_filename(
+    clean_path_pdf = get_output_filename(
         "hierarchical_clustering_clean",
         settings["style"],
         "pdf",
         script_name="hierarchical-clustering",
     )
-    plot_clustered_heatmap(
+    clean_path_png = get_output_filename(
+        "hierarchical_clustering_clean",
+        settings["style"],
+        "png",
+        script_name="hierarchical-clustering",
+    )
+
+    fig = plot_clustered_heatmap(
         clustered_barcodes,
         clustered_segment_ids,
-        clean_path,
+        clean_path_pdf,
         settings,
         "",
         show_labels=False,
@@ -1119,37 +1148,69 @@ def hierarchical_clustering_analysis(
         transparent_bg=transparent_bg,
         reverse_channels=reverse_channels,
     )
-    heatmap_outputs["clean"] = clean_path
+    # Save PNG version with transparency if requested
+    fig.savefig(
+        clean_path_png,
+        dpi=DPI,
+        bbox_inches="tight",
+        pad_inches=0.1,
+        transparent=transparent_bg,
+    )
+    plt.close(fig)
+
+    heatmap_outputs["clean_pdf"] = clean_path_pdf
+    heatmap_outputs["clean_png"] = clean_path_png
 
     # 3. Simple heatmap with x-axis labels and y-axis label only
-    simple_path = get_output_filename(
+    simple_path_pdf = get_output_filename(
         "hierarchical_clustering_simple",
         settings["style"],
         "pdf",
         script_name="hierarchical-clustering",
     )
-    plot_clustered_heatmap_simple(
+    simple_path_png = get_output_filename(
+        "hierarchical_clustering_simple",
+        settings["style"],
+        "png",
+        script_name="hierarchical-clustering",
+    )
+
+    fig = plot_clustered_heatmap_simple(
         clustered_barcodes,
         clustered_segment_ids,
-        simple_path,
+        simple_path_pdf,
         settings,
         transparent_bg=transparent_bg,
         reverse_channels=reverse_channels,
     )
-    heatmap_outputs["simple"] = simple_path
+    # Save PNG version with transparency if requested
+    fig.savefig(
+        simple_path_png, dpi=DPI, bbox_inches="tight", transparent=transparent_bg
+    )
+    plt.close(fig)
+
+    heatmap_outputs["simple_pdf"] = simple_path_pdf
+    heatmap_outputs["simple_png"] = simple_path_png
 
     # 4. INVERTED versions - same outputs but with flipped black/white
     # 4a. Inverted with labels and highlights
-    inverted_labels_path = get_output_filename(
+    inverted_labels_path_pdf = get_output_filename(
         "hierarchical_clustering_with_labels_inverted",
         settings["style"],
         "pdf",
         script_name="hierarchical-clustering",
     )
-    plot_clustered_heatmap_inverted(
+    inverted_labels_path_png = get_output_filename(
+        "hierarchical_clustering_with_labels_inverted",
+        settings["style"],
+        "png",
+        script_name="hierarchical-clustering",
+    )
+
+    fig = plot_clustered_heatmap_inverted(
         clustered_barcodes,
         clustered_segment_ids,
-        inverted_labels_path,
+        inverted_labels_path_pdf,
         settings,
         title_suffix,
         show_labels=True,
@@ -1159,19 +1220,37 @@ def hierarchical_clustering_analysis(
         transparent_bg=transparent_bg,
         reverse_channels=reverse_channels,
     )
-    heatmap_outputs["with_labels_inverted"] = inverted_labels_path
+    # Save PNG version with transparency if requested
+    fig.savefig(
+        inverted_labels_path_png,
+        dpi=DPI,
+        bbox_inches="tight",
+        pad_inches=0.2,
+        transparent=transparent_bg,
+    )
+    plt.close(fig)
+
+    heatmap_outputs["with_labels_inverted_pdf"] = inverted_labels_path_pdf
+    heatmap_outputs["with_labels_inverted_png"] = inverted_labels_path_png
 
     # 4b. Inverted clean (no labels, no highlights)
-    inverted_clean_path = get_output_filename(
+    inverted_clean_path_pdf = get_output_filename(
         "hierarchical_clustering_clean_inverted",
         settings["style"],
         "pdf",
         script_name="hierarchical-clustering",
     )
-    plot_clustered_heatmap_inverted(
+    inverted_clean_path_png = get_output_filename(
+        "hierarchical_clustering_clean_inverted",
+        settings["style"],
+        "png",
+        script_name="hierarchical-clustering",
+    )
+
+    fig = plot_clustered_heatmap_inverted(
         clustered_barcodes,
         clustered_segment_ids,
-        inverted_clean_path,
+        inverted_clean_path_pdf,
         settings,
         "",
         show_labels=False,
@@ -1181,19 +1260,37 @@ def hierarchical_clustering_analysis(
         transparent_bg=transparent_bg,
         reverse_channels=reverse_channels,
     )
-    heatmap_outputs["clean_inverted"] = inverted_clean_path
+    # Save PNG version with transparency if requested
+    fig.savefig(
+        inverted_clean_path_png,
+        dpi=DPI,
+        bbox_inches="tight",
+        pad_inches=0.1,
+        transparent=transparent_bg,
+    )
+    plt.close(fig)
+
+    heatmap_outputs["clean_inverted_pdf"] = inverted_clean_path_pdf
+    heatmap_outputs["clean_inverted_png"] = inverted_clean_path_png
 
     # 4c. Inverted simple (x-axis labels, y-axis label only)
-    inverted_simple_path = get_output_filename(
+    inverted_simple_path_pdf = get_output_filename(
         "hierarchical_clustering_simple_inverted",
         settings["style"],
         "pdf",
         script_name="hierarchical-clustering",
     )
-    plot_clustered_heatmap_inverted(
+    inverted_simple_path_png = get_output_filename(
+        "hierarchical_clustering_simple_inverted",
+        settings["style"],
+        "png",
+        script_name="hierarchical-clustering",
+    )
+
+    fig = plot_clustered_heatmap_inverted(
         clustered_barcodes,
         clustered_segment_ids,
-        inverted_simple_path,
+        inverted_simple_path_pdf,
         settings,
         "",
         show_labels=True,  # Show x/y labels but not individual y-ticks
@@ -1203,8 +1300,17 @@ def hierarchical_clustering_analysis(
         transparent_bg=transparent_bg,
         reverse_channels=reverse_channels,
     )
-    # Modify to be simple style (no y-tick labels)
-    heatmap_outputs["simple_inverted"] = inverted_simple_path
+    # Save PNG version with transparency if requested
+    fig.savefig(
+        inverted_simple_path_png,
+        dpi=DPI,
+        bbox_inches="tight",
+        transparent=transparent_bg,
+    )
+    plt.close(fig)
+
+    heatmap_outputs["simple_inverted_pdf"] = inverted_simple_path_pdf
+    heatmap_outputs["simple_inverted_png"] = inverted_simple_path_png
 
     # Save results
     output_files = save_clustering_results(
@@ -1328,6 +1434,21 @@ def main():
         choices=["paper", "poster"],
         default="paper",
         help="Plot style to use (paper or poster)",
+    )
+    # Add shorthand flags for convenience
+    parser.add_argument(
+        "--paper",
+        action="store_const",
+        const="paper",
+        dest="style",
+        help="Use paper style (same as --style paper)",
+    )
+    parser.add_argument(
+        "--poster",
+        action="store_const",
+        const="poster",
+        dest="style",
+        help="Use poster style (same as --style poster)",
     )
     parser.add_argument(
         "--font-size",
