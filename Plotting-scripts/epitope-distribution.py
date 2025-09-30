@@ -86,8 +86,8 @@ def create_epitope_plot(soma_barcodes, settings):
     median_proportion = np.median(epitope_proportions)
 
     # Create DataFrame with custom epitope names based on style
-    if settings["style"] == PlotStyle.POSTER:
-        # For poster mode, use "Bit [number]" format based on order in target_channels
+    if settings["style"] in [PlotStyle.POSTER, PlotStyle.BLOG]:
+        # For poster and blog modes, use "Bit [number]" format based on order in target_channels
         custom_epitopes = [f"Bit {i + 1}" for i in range(len(target_channels))]
     else:
         # For paper mode, use the custom epitope names
@@ -187,7 +187,11 @@ def create_epitope_plot(soma_barcodes, settings):
     plt.ylim(0, 0.5)
 
     # Adjust layout with specific padding to preserve font sizes
-    plt.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.4)
+    if settings["style"] == PlotStyle.BLOG:
+        # Blog needs more left margin for y-axis label visibility
+        plt.subplots_adjust(left=0.2, right=0.95, top=0.9, bottom=0.4)
+    else:
+        plt.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.4)
 
     return fig, epitope_df, mean_proportion, median_proportion
 
@@ -198,9 +202,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--style",
-        choices=["paper", "poster"],
+        choices=["paper", "poster", "blog"],
         default="paper",
-        help="Plot style to use (paper or poster)",
+        help="Plot style to use (paper, poster, or blog)",
     )
     parser.add_argument(
         "--font-size",
@@ -210,7 +214,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get plot settings
-    style = PlotStyle.POSTER if args.style == "poster" else PlotStyle.PAPER
+    if args.style == "poster":
+        style = PlotStyle.POSTER
+    elif args.style == "blog":
+        style = PlotStyle.BLOG
+    else:
+        style = PlotStyle.PAPER
     settings = set_plot_style(style, font_size=args.font_size)
 
     # Apply settings
@@ -239,7 +248,9 @@ if __name__ == "__main__":
     save_channel_statistics(epitope_df, len(soma_barcodes))
 
     # Create markdown documentation
-    epitope_label = "bit" if settings["style"] == PlotStyle.POSTER else "epitope"
+    epitope_label = (
+        "bit" if settings["style"] in [PlotStyle.POSTER, PlotStyle.BLOG] else "epitope"
+    )
     md_content = f"""# Epitope Distribution Analysis
 
 ## Overview

@@ -8,6 +8,7 @@ import seaborn as sns
 class PlotStyle(Enum):
     PAPER = auto()
     POSTER = auto()
+    BLOG = auto()
 
 
 # Default style
@@ -35,14 +36,23 @@ def get_script_output_dir(script_name: str) -> str:
 PAPER_SIZES = {
     "FIG_WIDTH": 3,  # inches = 152 mm
     "FIG_HEIGHT": 2,  # inches = 102 mm
-    "HISTOGRAM_BARCODE_LENGTHS": (2.2, 1.9),
-    "HISTOGRAM_EPITOPE_DIST": (2.8, 1.9),
-    "HISTOGRAM_COLLISIONS": (1.4, 1.8),  #
+    "HISTOGRAM_BARCODE_LENGTHS": (
+        2.3,
+        1.9,
+    ),  # histogram of how many bits are in the barcode
+    "HISTOGRAM_EPITOPE_DIST": (
+        3,
+        2.1,
+    ),  # histogram of what fraction cells have each bit
+    "HISTOGRAM_COLLISIONS": (
+        1.0,
+        1.4,
+    ),  # oriignally 1.4, 1.8 # need to convert sizes.....
     "HISTOGRAM_HAMMING_DISTANCE": (2, 1.8),  # Wider for distance distribution
-    "HISTOGRAM_COLLISION_CATEGORIES": (1.1, 1.6),  # important one
+    "HISTOGRAM_COLLISION_CATEGORIES": (1.4, 2),  # originally (1.1, 1.6),
     "MONTE_CARLO": (2, 2),
     "SAMPLING_PLOT": (3, 2),
-    "HEATMAP": (1.2, 4),
+    "HEATMAP": (1.3, 6),
 }
 
 # Poster sizes (1.5x paper sizes)
@@ -65,6 +75,20 @@ POSTER_SIZES = {
     "HEATMAP": (1, 3.3),
 }
 
+# Blog sizes
+BLOG_SIZES = {
+    "FIG_WIDTH": 6,  # Wider for web display
+    "FIG_HEIGHT": 4,  # Good aspect ratio for web
+    "HISTOGRAM_BARCODE_LENGTHS": (1.8, 1.6),  # Wide format for web readability
+    "HISTOGRAM_EPITOPE_DIST": (2.6, 1.8),  # Extra wide for epitope labels
+    "HISTOGRAM_COLLISIONS": (1, 1.3),  # Square-ish for web
+    "HISTOGRAM_HAMMING_DISTANCE": (1.2, 1.5),  # Wide for distance distribution
+    "HISTOGRAM_COLLISION_CATEGORIES": (1.2, 1.5),  # Square for categories
+    "MONTE_CARLO": (6, 4),  # Standard web size
+    "SAMPLING_PLOT": (6, 4),  # Standard web size
+    "HEATMAP": (2, 8),  # Tall for web display
+}
+
 
 # Colors
 MAIN_COLOR = "gray"  # Silver
@@ -75,11 +99,12 @@ COLOR_PALETTE = sns.color_palette("tab10")
 FONT_FAMILY = "Arial"
 FONT_FALLBACK = ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"]
 
-# Font sizes for paper and poster
+# Font sizes for paper, poster, and blog
 PAPER_FONT_SIZES = {"TITLE": 8, "LABEL": 8, "TICK": 8, "LEGEND": 8, "ANNOTATION": 8}
 POSTER_FONT_SIZES = (
     PAPER_FONT_SIZES.copy()
 )  # Will be modified by set_plot_style if needed
+BLOG_FONT_SIZES = {"TITLE": 8, "LABEL": 8, "TICK": 8, "LEGEND": 8, "ANNOTATION": 8}
 
 # Line settings
 LINE_WIDTH = 1.5
@@ -92,22 +117,31 @@ DPI = 500
 
 # Function to set the plot style (paper or poster)
 def set_plot_style(style: PlotStyle = PlotStyle.PAPER, font_size: int = None):
-    """Set the plot style to either paper or poster mode.
+    """Set the plot style to paper, poster, or blog mode.
 
     Args:
-        style (PlotStyle): Either PlotStyle.PAPER or PlotStyle.POSTER
+        style (PlotStyle): Either PlotStyle.PAPER, PlotStyle.POSTER, or PlotStyle.BLOG
         font_size (int, optional): If provided and style is POSTER, use this font size for all text elements
 
     Returns:
         dict: Dictionary containing all plot settings
     """
-    sizes = PAPER_SIZES if style == PlotStyle.PAPER else POSTER_SIZES
+    if style == PlotStyle.PAPER:
+        sizes = PAPER_SIZES
+    elif style == PlotStyle.POSTER:
+        sizes = POSTER_SIZES
+    else:  # PlotStyle.BLOG
+        sizes = BLOG_SIZES
 
     # Set font sizes
     if style == PlotStyle.POSTER and font_size is not None:
         font_sizes = {k: font_size for k in PAPER_FONT_SIZES.keys()}
-    else:
-        font_sizes = PAPER_FONT_SIZES if style == PlotStyle.PAPER else POSTER_FONT_SIZES
+    elif style == PlotStyle.PAPER:
+        font_sizes = PAPER_FONT_SIZES
+    elif style == PlotStyle.POSTER:
+        font_sizes = POSTER_FONT_SIZES
+    else:  # PlotStyle.BLOG
+        font_sizes = BLOG_FONT_SIZES
 
     # Return settings dictionary
     return {
@@ -207,13 +241,50 @@ def get_output_filename(
 
     Args:
         base_name: The base name of the file without extension
-        style: The plot style (PlotStyle.PAPER or PlotStyle.POSTER)
+        style: The plot style (PlotStyle.PAPER, PlotStyle.POSTER, or PlotStyle.BLOG)
         extension: The file extension (default: 'png')
         script_name: Name of the script for output directory organization (e.g. 'collisions')
 
     Returns:
         str: The complete filename including style and extension
     """
-    style_suffix = "_poster" if style == PlotStyle.POSTER else "_paper"
+    if style == PlotStyle.POSTER:
+        style_suffix = "_poster"
+    elif style == PlotStyle.BLOG:
+        style_suffix = "_blog"
+    else:
+        style_suffix = "_paper"
+
     output_dir = get_script_output_dir(script_name) if script_name else BASE_OUTPUT_DIR
     return os.path.join(output_dir, f"{base_name}{style_suffix}.{extension}")
+
+
+def get_blog_filename(
+    base_name: str, extension: str = "png", output_dir: str = None
+) -> str:
+    """Generate a blog-specific filename with custom naming.
+
+    Args:
+        base_name: The base name of the file without extension
+        extension: The file extension (default: 'png')
+        output_dir: Custom output directory (defaults to blog subdirectory)
+
+    Returns:
+        str: The complete filename for blog post
+    """
+    if output_dir is None:
+        output_dir = get_script_output_dir("blog")
+
+    # Use more descriptive names for blog posts
+    blog_name_mapping = {
+        "collisions": "barcode-collision-histogram",
+        "collision_categories": "collision-proportion-analysis",
+        "min_distances": "nearest-neighbor-distances",
+        "average_distances": "average-hamming-distances",
+        "all_distances": "pairwise-distance-distribution",
+        "epitope_distribution": "protein-bit-expression-levels",
+        "barcode_length_distribution": "barcode-complexity-distribution",
+    }
+
+    blog_name = blog_name_mapping.get(base_name, base_name)
+    return os.path.join(output_dir, f"{blog_name}.{extension}")

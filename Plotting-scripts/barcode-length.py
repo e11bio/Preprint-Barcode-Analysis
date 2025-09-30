@@ -155,9 +155,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--style",
-        choices=["paper", "poster"],
+        choices=["paper", "poster", "blog"],
         default="paper",
-        help="Plot style to use (paper or poster)",
+        help="Plot style to use (paper, poster, or blog)",
     )
     parser.add_argument(
         "--font-size",
@@ -167,7 +167,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Get plot settings
-    style = PlotStyle.POSTER if args.style == "poster" else PlotStyle.PAPER
+    if args.style == "poster":
+        style = PlotStyle.POSTER
+    elif args.style == "blog":
+        style = PlotStyle.BLOG
+    else:
+        style = PlotStyle.PAPER
     settings = set_plot_style(style, font_size=args.font_size)
 
     # Apply settings
