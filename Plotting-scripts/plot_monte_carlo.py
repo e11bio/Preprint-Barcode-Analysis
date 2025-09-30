@@ -289,7 +289,7 @@ def plot_summary_table(
     type_order = [t[0] for t in type_order_with_sort_key]
 
     # Format header in 10^n notation
-    power_map = {10**i: rf"$10^{i}$" for i in range(1, 8)}
+    power_map = {10**i: rf"$\mathrm{{10}}^{i}$" for i in range(1, 8)}
     header_row = ["Type"] + [power_map.get(th, str(th)) for th in cell_thresholds]
 
     # Build table data

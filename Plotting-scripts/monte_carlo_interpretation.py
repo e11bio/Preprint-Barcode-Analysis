@@ -413,7 +413,7 @@ def _format_scientific_notation(n):
     """
     Format large numbers in scientific notation with LaTeX formatting.
     Professional scientific notation starting from 10^4.
-    Examples: 10000 -> $10^4$, 29500 -> $3×10^4$, 1000000 -> $10^6$
+    Examples: 10000 -> $\mathrm{10}^4$, 29500 -> $3\times\mathrm{10}^4$, 1000000 -> $\mathrm{10}^6$
     """
     import math
 
@@ -433,16 +433,16 @@ def _format_scientific_notation(n):
     # For coefficients very close to integers, use the integer
     if abs(coefficient - coeff_rounded) < 0.1:
         if coeff_rounded == 1:
-            return f"$10^{power}$"
+            return f"$\\mathrm{{10}}^{{{power}}}$"
         else:
-            return f"${coeff_rounded}×10^{power}$"
+            return f"${coeff_rounded}\\times\\mathrm{{10}}^{{{power}}}$"
     else:
         # For non-integer coefficients, round to 1 decimal place
         coeff_decimal = round(coefficient, 1)
         if coeff_decimal == 1.0:
-            return f"10^{power}"
+            return f"$\\mathrm{{10}}^{{{power}}}$"
         else:
-            return f"{coeff_decimal:.1f}×10^{power}"
+            return f"${coeff_decimal:.1f}\\times\\mathrm{{10}}^{{{power}}}$"
 
 
 def format_mean_sd(mean, sd, min_sd_display=0.5, compact=False, compact_threshold=3):
